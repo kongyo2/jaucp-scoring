@@ -1,4 +1,5 @@
 import { ResultAsync, errAsync, okAsync } from "neverthrow";
+import { OpenRouter } from "@openrouter/sdk";
 import { ScoringResultSchema, type ScoringResult } from "./schemas";
 
 /**
@@ -44,55 +45,45 @@ const SCORING_PROMPT = `あなたは削除主義者気質の辛口レビュア�
   "advice": "合計60点未満か、humorが30点未満の時は必須。その他は省略可だが、必要であれば示してもよい。"
 }`;
 
-interface ChatMessage {
-    role: "system" | "user" | "assistant";
-    content: string;
-}
-
-interface ChatCompletionResponse {
-    choices: Array<{
-        message: {
-            content: string;
-        };
-    }>;
+/**
+ * OpenRouter SDKインスタンスを作成
+ */
+function createOpenRouterClient(apiKey: string): OpenRouter {
+    return new OpenRouter({
+        apiKey,
+    });
 }
 
 /**
  * 記事を採点する
+ * OpenRouter SDK の callModel を使用
  */
 export function scoreArticle(
     apiKey: string,
     model: string,
     articleContent: string
 ): ResultAsync<ScoringResult, Error> {
-    const messages: ChatMessage[] = [
-        { role: "system", content: SCORING_PROMPT },
-        { role: "user", content: articleContent },
-    ];
+    const openrouter = createOpenRouterClient(apiKey);
 
     return ResultAsync.fromPromise(
-        fetch("https://openrouter.ai/api/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${apiKey}`,
-                "Content-Type": "application/json",
-                "X-Title": "JAUCP Scoring Tool",
-            },
-            body: JSON.stringify({
+        (async () => {
+            const result = openrouter.callModel({
                 model,
-                messages,
+                instructions: SCORING_PROMPT,
+                input: articleContent,
                 temperature: 0.3,
-            }),
-        }).then(async (response) => {
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`API エラー (${response.status}): ${errorText}`);
-            }
-            return response.json() as Promise<ChatCompletionResponse>;
-        }),
+                text: {
+                    format: {
+                        type: "json_object",
+                    },
+                },
+            });
+
+            const text = await result.getText();
+            return text;
+        })(),
         (error) => new Error(`API 呼び出しエラー: ${error}`)
-    ).andThen((response) => {
-        const content = response.choices[0]?.message?.content;
+    ).andThen((content) => {
         if (!content) {
             return errAsync(new Error("空のレスポンス"));
         }
@@ -120,4 +111,4 @@ export function scoreArticle(
     });
 }
 
-export { SCORING_PROMPT };
+export { SCORING_PROMPT, createOpenRouterClient };
