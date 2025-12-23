@@ -127,6 +127,16 @@ function setupEventListeners() {
       performScoring();
     }
   });
+
+  // クリアボタン
+  const clearBtn = document.getElementById("clear-btn") as HTMLButtonElement;
+  clearBtn.addEventListener("click", () => {
+    articleInput.value = "";
+    updateCharCount();
+    updateScoreButtonState();
+    resultSection.classList.add("hidden");
+    hideError();
+  });
 }
 
 /**

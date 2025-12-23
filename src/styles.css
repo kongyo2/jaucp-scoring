@@ -280,6 +280,11 @@ a:hover {
   font-family: var(--font-mono);
 }
 
+.action-buttons {
+  display: flex;
+  gap: var(--space-sm);
+}
+
 /* Result Section */
 .result-section {
   background: var(--bg-secondary);
