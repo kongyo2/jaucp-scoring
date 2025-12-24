@@ -2,6 +2,8 @@
 
 日本語版アンサイクロペディアの記事採点ツール。LLMを使用して記事の品質を評価します。
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/kongyo2/jaucp-scoring)
+
 ## 機能
 
 - **記事採点**: ユーモア、構成一貫性、フォーマット、文章の自然さ、完成度を100点満点で評価
