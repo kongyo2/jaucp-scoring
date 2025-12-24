@@ -122,6 +122,152 @@ a:hover {
   -webkit-text-fill-color: initial;
 }
 
+/* Tab Bar */
+.tab-bar {
+  display: flex;
+  gap: var(--space-xs);
+  padding: var(--space-sm) 0;
+  margin-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tab-btn {
+  padding: var(--space-sm) var(--space-lg);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.tab-btn.active {
+  color: var(--accent-primary);
+  border-bottom-color: var(--accent-primary);
+}
+
+.tab-content {
+  display: block;
+}
+
+.tab-content.hidden {
+  display: none;
+}
+
+/* Utility Section */
+.utility-section {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+}
+
+.utility-section h2 {
+  margin-bottom: var(--space-sm);
+}
+
+.section-description {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin-bottom: var(--space-lg);
+}
+
+.wiki-check-form {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.wiki-check-form .form-input {
+  flex: 1;
+}
+
+/* Wiki Result */
+.wiki-result {
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  border: 1px solid var(--border-color);
+}
+
+.wiki-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: var(--space-md);
+}
+
+.status-icon {
+  font-size: 1.5rem;
+}
+
+.redirect-info {
+  background: var(--bg-tertiary);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.redirect-label {
+  color: var(--text-muted);
+  margin-right: var(--space-sm);
+}
+
+.redirect-target {
+  font-weight: 500;
+  color: var(--accent-secondary);
+}
+
+.templates-section h3 {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: var(--space-md);
+}
+
+.template-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.template-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.template-code {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--accent-primary);
+  word-break: break-all;
+}
+
+.copy-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+.template-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -291,6 +437,16 @@ a:hover {
 .action-buttons {
   display: flex;
   gap: var(--space-sm);
+}
+
+.import-section {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.import-input {
+  flex: 1;
 }
 
 /* Result Section */

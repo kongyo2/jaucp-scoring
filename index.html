@@ -32,66 +32,109 @@
       </button>
     </header>
 
+    <!-- タブバー -->
+    <nav class="tab-bar">
+      <button class="tab-btn active" data-tab="scoring">採点</button>
+      <button class="tab-btn" data-tab="utility">ユーティリティ</button>
+    </nav>
+
     <!-- メインコンテンツ -->
     <main class="main">
-      <!-- 入力セクション -->
-      <section class="input-section">
-        <div class="section-header">
-          <h2>記事入力</h2>
-          <div class="model-selector">
-            <img src="https://svgl.app/library/openrouter_dark.svg" alt="OpenRouter" class="provider-icon"
-              title="OpenRouter" />
-            <label for="model-select">モデル:</label>
-            <select id="model-select" disabled>
-              <option value="">APIキーを設定してください</option>
-            </select>
+      <!-- 採点タブ -->
+      <div id="tab-scoring" class="tab-content active">
+        <!-- 入力セクション -->
+        <section class="input-section">
+          <div class="section-header">
+            <h2>記事入力</h2>
+            <div class="model-selector">
+              <img src="https://svgl.app/library/openrouter_dark.svg" alt="OpenRouter" class="provider-icon"
+                title="OpenRouter" />
+              <label for="model-select">モデル:</label>
+              <select id="model-select" disabled>
+                <option value="">APIキーを設定してください</option>
+              </select>
+            </div>
           </div>
-        </div>
-        <textarea id="article-input" class="article-input"
-          placeholder="ここに記事のウィキテキストを入力してください...&#10;&#10;寄稿前の推敲用に、記事の品質をLLMで採点します。"></textarea>
-        <div class="input-actions">
-          <span id="char-count" class="char-count">0 文字</span>
-          <div class="action-buttons">
-            <button id="clear-btn" class="btn btn-secondary" type="button">クリア</button>
-            <button id="score-btn" class="btn btn-primary" disabled>
-              <span class="btn-text">採点する</span>
+          <textarea id="article-input" class="article-input"
+            placeholder="ここに記事のウィキテキストを入力してください...&#10;&#10;寄稿前の推敲用に、記事の品質をLLMで採点します。"></textarea>
+          <div class="input-actions">
+            <span id="char-count" class="char-count">0 文字</span>
+            <div class="action-buttons">
+              <button id="clear-btn" class="btn btn-secondary" type="button">クリア</button>
+              <button id="score-btn" class="btn btn-primary" disabled>
+                <span class="btn-text">採点する</span>
+                <span class="btn-loader hidden"></span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 結果セクション -->
+        <section id="result-section" class="result-section hidden">
+          <div class="result-header">
+            <h2>採点結果</h2>
+            <div class="result-meta">
+              <span id="result-category" class="category-badge"></span>
+              <span id="result-total" class="total-score"></span>
+            </div>
+          </div>
+
+          <!-- スコアテーブル -->
+          <table class="score-table">
+            <thead>
+              <tr>
+                <th>評価軸</th>
+                <th>満点</th>
+                <th>得点</th>
+                <th>理由</th>
+              </tr>
+            </thead>
+            <tbody id="score-tbody">
+              <!-- 動的に生成 -->
+            </tbody>
+          </table>
+
+          <!-- 改善点 -->
+          <div id="advice-section" class="advice-section hidden">
+            <h3>改善点</h3>
+            <div id="advice-content" class="advice-content"></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ユーティリティタブ -->
+      <div id="tab-utility" class="tab-content hidden">
+        <section class="utility-section">
+          <h2>Wikipedia存在確認</h2>
+          <p class="section-description">{{ウィキペディア}}系テンプレートの整備を補助します。記事タイトルを入力して存在を確認、リダイレクトを検出します。</p>
+
+          <div class="wiki-check-form">
+            <input type="text" id="wiki-title-input" class="form-input" placeholder="記事タイトル（例: EVE Online）" />
+            <button id="wiki-check-btn" class="btn btn-primary">
+              <span class="btn-text">確認</span>
               <span class="btn-loader hidden"></span>
             </button>
           </div>
-        </div>
-      </section>
 
-      <!-- 結果セクション -->
-      <section id="result-section" class="result-section hidden">
-        <div class="result-header">
-          <h2>採点結果</h2>
-          <div class="result-meta">
-            <span id="result-category" class="category-badge"></span>
-            <span id="result-total" class="total-score"></span>
+          <!-- 結果表示 -->
+          <div id="wiki-result" class="wiki-result hidden">
+            <div class="wiki-status">
+              <span id="wiki-status-icon" class="status-icon"></span>
+              <span id="wiki-status-text" class="status-text"></span>
+            </div>
+            <div id="wiki-redirect-info" class="redirect-info hidden">
+              <span class="redirect-label">リダイレクト先:</span>
+              <span id="wiki-redirect-target" class="redirect-target"></span>
+            </div>
+            <div id="wiki-templates" class="templates-section hidden">
+              <h3>貼り付け用テンプレート</h3>
+              <div id="wiki-template-list" class="template-list">
+                <!-- 動的に生成 -->
+              </div>
+            </div>
           </div>
-        </div>
-
-        <!-- スコアテーブル -->
-        <table class="score-table">
-          <thead>
-            <tr>
-              <th>評価軸</th>
-              <th>満点</th>
-              <th>得点</th>
-              <th>理由</th>
-            </tr>
-          </thead>
-          <tbody id="score-tbody">
-            <!-- 動的に生成 -->
-          </tbody>
-        </table>
-
-        <!-- 改善点 -->
-        <div id="advice-section" class="advice-section hidden">
-          <h3>改善点</h3>
-          <div id="advice-content" class="advice-content"></div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <!-- エラー表示 -->
       <div id="error-section" class="error-section hidden">
@@ -134,7 +177,8 @@
             <label for="gemini-key-input">Gemini API キー</label>
             <input type="password" id="gemini-key-input" class="form-input" placeholder="AIza..." />
             <p class="form-hint">
-              <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> でAPIキーを取得できます
+              <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>
+              でAPIキーを取得できます
             </p>
           </div>
           <div class="dialog-actions">

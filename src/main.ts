@@ -2,6 +2,7 @@ import { loadSettings, saveSettings, getCurrentApiKey } from "./lib/settings";
 import { fetchAvailableModels, getModelDisplayName } from "./lib/models";
 import { scoreArticle } from "./lib/scoring";
 import { fetchGeminiModels, scoreArticleWithGemini } from "./lib/gemini";
+import { checkWikipediaJa, checkWikipediaEn, generateTemplates, type WikipediaCheckResult } from "./lib/wikipedia";
 import type { ScoringResult, ProviderType, Settings } from "./lib/schemas";
 
 // DOM Elements
@@ -157,6 +158,149 @@ function setupEventListeners() {
     resultSection.classList.add("hidden");
     hideError();
   });
+
+  // タブ切り替え
+  const tabBtns = document.querySelectorAll(".tab-btn");
+  const tabContents = document.querySelectorAll(".tab-content");
+
+  tabBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const tabId = (btn as HTMLButtonElement).dataset.tab;
+
+      tabBtns.forEach((b) => b.classList.remove("active"));
+      tabContents.forEach((c) => c.classList.add("hidden"));
+
+      btn.classList.add("active");
+      document.getElementById(`tab-${tabId}`)?.classList.remove("hidden");
+      hideError();
+    });
+  });
+
+  // Wikipedia存在確認
+  const wikiTitleInput = document.getElementById("wiki-title-input") as HTMLInputElement;
+  const wikiCheckBtn = document.getElementById("wiki-check-btn") as HTMLButtonElement;
+  const wikiResult = document.getElementById("wiki-result") as HTMLDivElement;
+  const wikiStatusIcon = document.getElementById("wiki-status-icon") as HTMLSpanElement;
+  const wikiStatusText = document.getElementById("wiki-status-text") as HTMLSpanElement;
+  const wikiRedirectInfo = document.getElementById("wiki-redirect-info") as HTMLDivElement;
+  const wikiRedirectTarget = document.getElementById("wiki-redirect-target") as HTMLSpanElement;
+  const wikiTemplates = document.getElementById("wiki-templates") as HTMLDivElement;
+  const wikiTemplateList = document.getElementById("wiki-template-list") as HTMLDivElement;
+
+  wikiCheckBtn.addEventListener("click", async () => {
+    const title = wikiTitleInput.value.trim();
+    if (!title) {
+      showError("記事タイトルを入力してください");
+      return;
+    }
+
+    const btnText = wikiCheckBtn.querySelector(".btn-text") as HTMLSpanElement;
+    const btnLoader = wikiCheckBtn.querySelector(".btn-loader") as HTMLSpanElement;
+
+    btnText.textContent = "確認中...";
+    btnLoader.classList.remove("hidden");
+    wikiCheckBtn.disabled = true;
+    hideError();
+    wikiResult.classList.add("hidden");
+
+    // 日本語・英語両方を並行チェック
+    const [jaResultAsync, enResultAsync] = await Promise.all([
+      checkWikipediaJa(title),
+      checkWikipediaEn(title),
+    ]);
+
+    let jaResult: WikipediaCheckResult | null = null;
+    let enResult: WikipediaCheckResult | null = null;
+
+    jaResultAsync.match(
+      (r) => { jaResult = r; },
+      (e) => { console.error("日本語版エラー:", e); }
+    );
+
+    enResultAsync.match(
+      (r) => { enResult = r; },
+      (e) => { console.error("英語版エラー:", e); }
+    );
+
+    // 結果表示
+    if (!jaResult && !enResult) {
+      showError("Wikipedia APIへの接続に失敗しました");
+    } else {
+      displayWikiResult(jaResult, enResult, title);
+    }
+
+    btnText.textContent = "確認";
+    btnLoader.classList.add("hidden");
+    wikiCheckBtn.disabled = false;
+  });
+
+  function displayWikiResult(
+    jaResult: WikipediaCheckResult | null,
+    enResult: WikipediaCheckResult | null,
+    originalTitle: string
+  ) {
+    wikiResult.classList.remove("hidden");
+
+    // ステータス表示
+    if (jaResult?.exists) {
+      wikiStatusIcon.textContent = "✅";
+      if (jaResult.isDisambiguation) {
+        wikiStatusText.textContent = "存在（曖昧さ回避ページ）";
+        wikiRedirectInfo.classList.add("hidden");
+      } else if (jaResult.isRedirect) {
+        wikiStatusText.textContent = `存在（リダイレクト）`;
+        wikiRedirectInfo.classList.remove("hidden");
+        wikiRedirectTarget.textContent = jaResult.redirectTarget || "";
+      } else {
+        wikiStatusText.textContent = "存在";
+        wikiRedirectInfo.classList.add("hidden");
+      }
+    } else {
+      wikiStatusIcon.textContent = "❌";
+      wikiStatusText.textContent = "日本語版に存在しません";
+      wikiRedirectInfo.classList.add("hidden");
+    }
+
+    // テンプレート生成
+    if (jaResult || enResult) {
+      const templates = generateTemplates(
+        jaResult || { exists: false, isRedirect: false, isDisambiguation: false, title: originalTitle },
+        enResult || { exists: false, isRedirect: false, isDisambiguation: false, title: originalTitle },
+        originalTitle
+      );
+
+      if (templates.length > 0) {
+        wikiTemplates.classList.remove("hidden");
+        wikiTemplateList.innerHTML = templates
+          .map(
+            (t) => `
+              <div class="template-item">
+                <code class="template-code">${escapeHtml(t.template)}</code>
+                <button class="btn btn-icon copy-btn" title="コピー" data-template="${escapeHtml(t.template)}">📋</button>
+                <span class="template-desc">${escapeHtml(t.description)}</span>
+              </div>
+            `
+          )
+          .join("");
+
+        // コピーボタン
+        wikiTemplateList.querySelectorAll(".copy-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const template = (btn as HTMLButtonElement).dataset.template || "";
+            navigator.clipboard.writeText(template);
+            (btn as HTMLButtonElement).textContent = "✓";
+            setTimeout(() => {
+              (btn as HTMLButtonElement).textContent = "📋";
+            }, 1000);
+          });
+        });
+      } else {
+        wikiTemplates.classList.add("hidden");
+      }
+    } else {
+      wikiTemplates.classList.add("hidden");
+    }
+  }
 }
 
 /**
