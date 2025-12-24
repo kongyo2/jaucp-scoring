@@ -33,6 +33,8 @@ npm run tauri build
 
 [OpenRouter](https://openrouter.ai/keys)でAPIキーを取得できます。
 
+> **💡 無料で試せます**: OpenRouterでは無料で利用できるモデルも提供されています。クレジットを追加しなくても、無料モデルを選択することで採点機能をお試しいただけます。
+
 ## 技術スタック
 
 - **フロントエンド**: TypeScript, Vite
