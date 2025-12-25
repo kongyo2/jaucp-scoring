@@ -23,6 +23,7 @@ const DEFAULT_SETTINGS: Settings = {
     provider: "openrouter",
     openrouterApiKey: undefined,
     geminiApiKey: undefined,
+    cerebrasApiKey: undefined,
     selectedModel: undefined,
 };
 
@@ -36,6 +37,7 @@ export function loadSettings(): ResultAsync<Settings, Error> {
             const provider = await store.get<ProviderType>("provider");
             const openrouterApiKey = await store.get<string>("openrouterApiKey");
             const geminiApiKey = await store.get<string>("geminiApiKey");
+            const cerebrasApiKey = await store.get<string>("cerebrasApiKey");
             const selectedModel = await store.get<string>("selectedModel");
 
             // 旧形式からのマイグレーション
@@ -45,6 +47,7 @@ export function loadSettings(): ResultAsync<Settings, Error> {
                 provider: provider || "openrouter",
                 openrouterApiKey: openrouterApiKey || legacyApiKey,
                 geminiApiKey,
+                cerebrasApiKey,
                 selectedModel,
             };
         })(),
@@ -74,6 +77,9 @@ export function saveSettings(settings: Partial<Settings>): ResultAsync<void, Err
             if (settings.geminiApiKey !== undefined) {
                 await store.set("geminiApiKey", settings.geminiApiKey);
             }
+            if (settings.cerebrasApiKey !== undefined) {
+                await store.set("cerebrasApiKey", settings.cerebrasApiKey);
+            }
             if (settings.selectedModel !== undefined) {
                 await store.set("selectedModel", settings.selectedModel);
             }
@@ -91,6 +97,9 @@ export function hasApiKey(): ResultAsync<boolean, Error> {
         if (settings.provider === "gemini") {
             return !!settings.geminiApiKey;
         }
+        if (settings.provider === "cerebras") {
+            return !!settings.cerebrasApiKey;
+        }
         return !!settings.openrouterApiKey;
     });
 }
@@ -101,6 +110,9 @@ export function hasApiKey(): ResultAsync<boolean, Error> {
 export function getCurrentApiKey(settings: Settings): string | undefined {
     if (settings.provider === "gemini") {
         return settings.geminiApiKey;
+    }
+    if (settings.provider === "cerebras") {
+        return settings.cerebrasApiKey;
     }
     return settings.openrouterApiKey;
 }

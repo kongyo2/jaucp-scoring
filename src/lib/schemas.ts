@@ -3,7 +3,7 @@ import { z } from "@zod/zod";
 /**
  * プロバイダタイプ
  */
-export const ProviderTypeSchema = z.enum(["openrouter", "gemini"]);
+export const ProviderTypeSchema = z.enum(["openrouter", "gemini", "cerebras"]);
 export type ProviderType = z.infer<typeof ProviderTypeSchema>;
 
 /**
@@ -73,6 +73,16 @@ export const GeminiModelSchema = z.object({
 export type GeminiModel = z.infer<typeof GeminiModelSchema>;
 
 /**
+ * Cerebras モデル情報のスキーマ
+ */
+export const CerebrasModelSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+});
+
+export type CerebrasModel = z.infer<typeof CerebrasModelSchema>;
+
+/**
  * 共通モデル情報（UI表示用）
  */
 export const ModelInfoSchema = z.object({
@@ -90,6 +100,7 @@ export const SettingsSchema = z.object({
     provider: ProviderTypeSchema.optional().default("openrouter"),
     openrouterApiKey: z.string().optional(),
     geminiApiKey: z.string().optional(),
+    cerebrasApiKey: z.string().optional(),
     selectedModel: z.string().optional(),
 });
 

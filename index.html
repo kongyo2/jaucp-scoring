@@ -164,6 +164,7 @@
             <select id="provider-select" class="form-select">
               <option value="openrouter">OpenRouter</option>
               <option value="gemini">Google Gemini</option>
+              <option value="cerebras">Cerebras</option>
             </select>
           </div>
           <div class="form-group" id="openrouter-key-group">
@@ -178,6 +179,14 @@
             <input type="password" id="gemini-key-input" class="form-input" placeholder="AIza..." />
             <p class="form-hint">
               <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>
+              でAPIキーを取得できます
+            </p>
+          </div>
+          <div class="form-group hidden" id="cerebras-key-group">
+            <label for="cerebras-key-input">Cerebras API キー</label>
+            <input type="password" id="cerebras-key-input" class="form-input" placeholder="csk-..." />
+            <p class="form-hint">
+              <a href="https://cloud.cerebras.ai/platform#/apikeys" target="_blank" rel="noopener">Cerebras Cloud</a>
               でAPIキーを取得できます
             </p>
           </div>

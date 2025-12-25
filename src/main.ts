@@ -2,6 +2,7 @@ import { loadSettings, saveSettings, getCurrentApiKey } from "./lib/settings";
 import { fetchAvailableModels, getModelDisplayName } from "./lib/models";
 import { scoreArticle } from "./lib/scoring";
 import { fetchGeminiModels, scoreArticleWithGemini } from "./lib/gemini";
+import { fetchCerebrasModels, scoreArticleWithCerebras } from "./lib/cerebras";
 import { checkWikipediaJa, checkWikipediaEn, generateTemplates, type WikipediaCheckResult } from "./lib/wikipedia";
 import type { ScoringResult, ProviderType, Settings } from "./lib/schemas";
 
@@ -16,6 +17,8 @@ const openrouterKeyInput = document.getElementById("openrouter-key-input") as HT
 const geminiKeyInput = document.getElementById("gemini-key-input") as HTMLInputElement;
 const openrouterKeyGroup = document.getElementById("openrouter-key-group") as HTMLDivElement;
 const geminiKeyGroup = document.getElementById("gemini-key-group") as HTMLDivElement;
+const cerebrasKeyInput = document.getElementById("cerebras-key-input") as HTMLInputElement;
+const cerebrasKeyGroup = document.getElementById("cerebras-key-group") as HTMLDivElement;
 const providerIcon = document.querySelector(".provider-icon") as HTMLImageElement;
 const modelSelect = document.getElementById("model-select") as HTMLSelectElement;
 const articleInput = document.getElementById("article-input") as HTMLTextAreaElement;
@@ -35,6 +38,7 @@ let currentSettings: Settings = {
   provider: "openrouter",
   openrouterApiKey: undefined,
   geminiApiKey: undefined,
+  cerebrasApiKey: undefined,
   selectedModel: undefined,
 };
 let isScoring = false;
@@ -43,6 +47,7 @@ let isScoring = false;
 const PROVIDER_ICONS: Record<ProviderType, string> = {
   openrouter: "https://svgl.app/library/openrouter_dark.svg",
   gemini: "https://svgl.app/library/gemini.svg",
+  cerebras: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/cerebras.svg",
 };
 
 // Evaluation axis info
@@ -80,16 +85,22 @@ async function init() {
  */
 function updateProviderUI() {
   providerIcon.src = PROVIDER_ICONS[currentSettings.provider];
-  providerIcon.alt = currentSettings.provider === "gemini" ? "Gemini" : "OpenRouter";
+  const labels: Record<ProviderType, string> = {
+    openrouter: "OpenRouter",
+    gemini: "Gemini",
+    cerebras: "Cerebras",
+  };
+  providerIcon.alt = labels[currentSettings.provider];
 }
 
 /**
  * 設定ダイアログのプロバイダ表示を切り替え
  */
 function toggleProviderFields() {
-  const isGemini = providerSelect.value === "gemini";
-  openrouterKeyGroup.classList.toggle("hidden", isGemini);
-  geminiKeyGroup.classList.toggle("hidden", !isGemini);
+  const provider = providerSelect.value;
+  openrouterKeyGroup.classList.toggle("hidden", provider !== "openrouter");
+  geminiKeyGroup.classList.toggle("hidden", provider !== "gemini");
+  cerebrasKeyGroup.classList.toggle("hidden", provider !== "cerebras");
 }
 
 /**
@@ -100,6 +111,7 @@ function setupEventListeners() {
     providerSelect.value = currentSettings.provider;
     openrouterKeyInput.value = currentSettings.openrouterApiKey || "";
     geminiKeyInput.value = currentSettings.geminiApiKey || "";
+    cerebrasKeyInput.value = currentSettings.cerebrasApiKey || "";
     toggleProviderFields();
     settingsDialog.showModal();
   });
@@ -120,6 +132,7 @@ function setupEventListeners() {
       provider: providerSelect.value as ProviderType,
       openrouterApiKey: openrouterKeyInput.value.trim() || undefined,
       geminiApiKey: geminiKeyInput.value.trim() || undefined,
+      cerebrasApiKey: cerebrasKeyInput.value.trim() || undefined,
     };
 
     const result = await saveSettings(newSettings);
@@ -318,9 +331,14 @@ async function loadModels() {
   modelSelect.innerHTML = '<option value="">読み込み中...</option>';
   modelSelect.disabled = true;
 
-  const result = currentSettings.provider === "gemini"
-    ? await fetchGeminiModels(apiKey)
-    : await fetchAvailableModels(apiKey);
+  let result;
+  if (currentSettings.provider === "gemini") {
+    result = await fetchGeminiModels(apiKey);
+  } else if (currentSettings.provider === "cerebras") {
+    result = await fetchCerebrasModels(apiKey);
+  } else {
+    result = await fetchAvailableModels(apiKey);
+  }
 
   result.match(
     (models) => {
@@ -393,9 +411,14 @@ async function performScoring() {
     return;
   }
 
-  const result = currentSettings.provider === "gemini"
-    ? await scoreArticleWithGemini(apiKey, model, articleInput.value)
-    : await scoreArticle(apiKey, model, articleInput.value);
+  let result;
+  if (currentSettings.provider === "gemini") {
+    result = await scoreArticleWithGemini(apiKey, model, articleInput.value);
+  } else if (currentSettings.provider === "cerebras") {
+    result = await scoreArticleWithCerebras(apiKey, model, articleInput.value);
+  } else {
+    result = await scoreArticle(apiKey, model, articleInput.value);
+  }
 
   result.match(
     (scoring) => displayResult(scoring),
