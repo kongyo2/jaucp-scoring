@@ -21,7 +21,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' https://openrouter.ai https://*.openrouter.ai https://generativelanguage.googleapis.com https://ja.wikipedia.org https://en.wikipedia.org; img-src 'self' https://svgl.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com"
+      "csp": "default-src 'self'; connect-src 'self' https://openrouter.ai https://*.openrouter.ai https://generativelanguage.googleapis.com https://api.cerebras.ai https://ja.wikipedia.org https://en.wikipedia.org; img-src 'self' https://svgl.app https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com"
     }
   },
   "bundle": {
