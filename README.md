@@ -4,6 +4,8 @@
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/kongyo2/jaucp-scoring)
 
+[![CI](https://github.com/kongyo2/jaucp-scoring/actions/workflows/ci.yml/badge.svg)](https://github.com/kongyo2/jaucp-scoring/actions/workflows/ci.yml)
+
 ## 📋 目次
 
 - [[このツールについて]](#このツールについて)
