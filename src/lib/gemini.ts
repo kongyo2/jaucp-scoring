@@ -46,7 +46,8 @@ export function fetchGeminiModels(apiKey: string): ResultAsync<GeminiModel[], Er
 export function scoreArticleWithGemini(
     apiKey: string,
     model: string,
-    articleContent: string
+    articleContent: string,
+    temperature: number = 0.3
 ): ResultAsync<ScoringResult, Error> {
     const ai = new GoogleGenAI({ apiKey });
 
@@ -57,7 +58,7 @@ export function scoreArticleWithGemini(
                 contents: articleContent,
                 config: {
                     systemInstruction: SCORING_PROMPT,
-                    temperature: 0.3,
+                    temperature,
                 },
             });
 

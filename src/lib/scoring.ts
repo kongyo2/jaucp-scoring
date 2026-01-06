@@ -62,7 +62,8 @@ interface ChatCompletionResponse {
 export function scoreArticle(
     apiKey: string,
     model: string,
-    articleContent: string
+    articleContent: string,
+    temperature: number = 0.3
 ): ResultAsync<ScoringResult, Error> {
     const messages: ChatMessage[] = [
         { role: "system", content: SCORING_PROMPT },
@@ -80,7 +81,7 @@ export function scoreArticle(
             body: JSON.stringify({
                 model,
                 messages,
-                temperature: 0.3,
+                temperature,
             }),
         }).then(async (response) => {
             if (!response.ok) {
