@@ -1,0 +1,115 @@
+name: Jules Security Audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  jules-audit:
+    name: Jules Code Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files (PR only)
+        if: github.event_name == 'pull_request'
+        id: changed-files
+        run: |
+          FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | tr '\n' ' ')
+          echo "files=$FILES" >> $GITHUB_OUTPUT
+
+      - name: Jules Security Audit
+        uses: google-labs-code/jules-invoke@v1
+        with:
+          jules_api_key: ${{ secrets.JULES_API_KEY }}
+          starting_branch: ${{ github.head_ref || github.ref_name }}
+          include_last_commit: true
+          prompt: |
+            You are a security auditor reviewing a Tauri 2.x desktop application (JAUCP Scoring Tool).
+            This is a Japanese Uncyclopedia article scoring tool using AI APIs (OpenRouter, Gemini, Cerebras).
+
+            **IMPORTANT CONSTRAINTS:**
+            - This is a READ-ONLY audit. Do NOT modify any code, create branches, or open pull requests.
+            - Only analyze and report findings.
+
+            **Review the codebase for:**
+
+            1. **Security Vulnerabilities**
+               - API key exposure or improper handling
+               - XSS, injection attacks, unsafe data handling
+               - Insecure external API communications
+               - CSP (Content Security Policy) misconfigurations in Tauri
+
+            2. **TypeScript Code Quality**
+               - Type safety issues
+               - Error handling patterns (neverthrow Result types)
+               - Zod schema validation completeness
+
+            3. **Tauri-specific Security**
+               - Rust backend security
+               - IPC (Inter-Process Communication) vulnerabilities
+               - Plugin security (tauri-plugin-store, tauri-plugin-opener)
+
+            4. **Best Practices**
+               - Dependency security concerns
+               - Memory leaks or performance issues
+               - Code maintainability
+
+            ${{ github.event_name == 'pull_request' && format('**Changed files in this PR:** {0}', steps.changed-files.outputs.files) || '' }}
+
+            Provide a structured report with:
+            - Severity levels (Critical/High/Medium/Low/Info)
+            - Specific file locations and line numbers
+            - Recommended fixes
+
+      - name: Post audit summary comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `## Jules Security Audit Complete
+
+            The automated Jules AI security audit has been executed for this pull request.
+
+            **View the full audit report in the [Actions log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).**
+
+            ---
+            > **Note:** This is an automated AI-powered code review. All findings should be validated by a human reviewer before taking action.
+            `;
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Jules Security Audit Complete')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
