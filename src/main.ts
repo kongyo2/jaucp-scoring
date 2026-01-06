@@ -19,6 +19,8 @@ const openrouterKeyGroup = document.getElementById("openrouter-key-group") as HT
 const geminiKeyGroup = document.getElementById("gemini-key-group") as HTMLDivElement;
 const cerebrasKeyInput = document.getElementById("cerebras-key-input") as HTMLInputElement;
 const cerebrasKeyGroup = document.getElementById("cerebras-key-group") as HTMLDivElement;
+const temperatureSlider = document.getElementById("temperature-slider") as HTMLInputElement;
+const temperatureValue = document.getElementById("temperature-value") as HTMLSpanElement;
 const providerIcon = document.querySelector(".provider-icon") as HTMLImageElement;
 const modelSelect = document.getElementById("model-select") as HTMLSelectElement;
 const articleInput = document.getElementById("article-input") as HTMLTextAreaElement;
@@ -40,6 +42,7 @@ let currentSettings: Settings = {
   geminiApiKey: undefined,
   cerebrasApiKey: undefined,
   selectedModel: undefined,
+  temperature: 0.3,
 };
 let isScoring = false;
 
@@ -112,6 +115,8 @@ function setupEventListeners() {
     openrouterKeyInput.value = currentSettings.openrouterApiKey || "";
     geminiKeyInput.value = currentSettings.geminiApiKey || "";
     cerebrasKeyInput.value = currentSettings.cerebrasApiKey || "";
+    temperatureSlider.value = currentSettings.temperature?.toString() || "0.3";
+    temperatureValue.textContent = currentSettings.temperature?.toString() || "0.3";
     toggleProviderFields();
     settingsDialog.showModal();
   });
@@ -125,6 +130,10 @@ function setupEventListeners() {
 
   providerSelect.addEventListener("change", toggleProviderFields);
 
+  temperatureSlider.addEventListener("input", () => {
+    temperatureValue.textContent = temperatureSlider.value;
+  });
+
   settingsForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -133,6 +142,7 @@ function setupEventListeners() {
       openrouterApiKey: openrouterKeyInput.value.trim() || undefined,
       geminiApiKey: geminiKeyInput.value.trim() || undefined,
       cerebrasApiKey: cerebrasKeyInput.value.trim() || undefined,
+      temperature: parseFloat(temperatureSlider.value),
     };
 
     const result = await saveSettings(newSettings);
@@ -413,11 +423,11 @@ async function performScoring() {
 
   let result;
   if (currentSettings.provider === "gemini") {
-    result = await scoreArticleWithGemini(apiKey, model, articleInput.value);
+    result = await scoreArticleWithGemini(apiKey, model, articleInput.value, currentSettings.temperature);
   } else if (currentSettings.provider === "cerebras") {
-    result = await scoreArticleWithCerebras(apiKey, model, articleInput.value);
+    result = await scoreArticleWithCerebras(apiKey, model, articleInput.value, currentSettings.temperature);
   } else {
-    result = await scoreArticle(apiKey, model, articleInput.value);
+    result = await scoreArticle(apiKey, model, articleInput.value, currentSettings.temperature);
   }
 
   result.match(

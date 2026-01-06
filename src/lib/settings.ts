@@ -25,6 +25,7 @@ const DEFAULT_SETTINGS: Settings = {
     geminiApiKey: undefined,
     cerebrasApiKey: undefined,
     selectedModel: undefined,
+    temperature: 0.3,
 };
 
 /**
@@ -39,6 +40,7 @@ export function loadSettings(): ResultAsync<Settings, Error> {
             const geminiApiKey = await store.get<string>("geminiApiKey");
             const cerebrasApiKey = await store.get<string>("cerebrasApiKey");
             const selectedModel = await store.get<string>("selectedModel");
+            const temperature = await store.get<number>("temperature");
 
             // 旧形式からのマイグレーション
             const legacyApiKey = await store.get<string>("apiKey");
@@ -49,6 +51,7 @@ export function loadSettings(): ResultAsync<Settings, Error> {
                 geminiApiKey,
                 cerebrasApiKey,
                 selectedModel,
+                temperature,
             };
         })(),
         (error) => new Error(`設定読み込みエラー: ${error}`)
@@ -82,6 +85,9 @@ export function saveSettings(settings: Partial<Settings>): ResultAsync<void, Err
             }
             if (settings.selectedModel !== undefined) {
                 await store.set("selectedModel", settings.selectedModel);
+            }
+            if (settings.temperature !== undefined) {
+                await store.set("temperature", settings.temperature);
             }
             await store.save();
         })(),

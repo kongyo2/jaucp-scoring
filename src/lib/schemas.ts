@@ -102,6 +102,7 @@ export const SettingsSchema = z.object({
     geminiApiKey: z.string().optional(),
     cerebrasApiKey: z.string().optional(),
     selectedModel: z.string().optional(),
+    temperature: z.number().min(0).max(1).optional(),
 });
 
 export type Settings = z.infer<typeof SettingsSchema>;

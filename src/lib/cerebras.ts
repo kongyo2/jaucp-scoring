@@ -141,7 +141,8 @@ export function fetchCerebrasModels(apiKey: string): ResultAsync<CerebrasModel[]
 export function scoreArticleWithCerebras(
     apiKey: string,
     model: string,
-    articleContent: string
+    articleContent: string,
+    temperature: number = 0.3
 ): ResultAsync<ScoringResult, Error> {
     const messages: CerebrasChatMessage[] = [
         { role: "system", content: SCORING_PROMPT },
@@ -158,7 +159,7 @@ export function scoreArticleWithCerebras(
             body: JSON.stringify({
                 model,
                 messages,
-                temperature: 0.3,
+                temperature,
             }),
         }).then(async (response) => {
             if (!response.ok) {
