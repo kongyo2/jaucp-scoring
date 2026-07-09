@@ -7,6 +7,12 @@ export const ProviderTypeSchema = z.enum(["openrouter", "gemini", "cerebras"]);
 export type ProviderType = z.infer<typeof ProviderTypeSchema>;
 
 /**
+ * プロンプトプリセット
+ */
+export const PromptPresetSchema = z.enum(["default", "humorless", "custom"]);
+export type PromptPreset = z.infer<typeof PromptPresetSchema>;
+
+/**
  * 採点結果の詳細スキーマ
  */
 export const ScoringDetailsSchema = z.object({
@@ -30,13 +36,14 @@ export const ScoringReasonsSchema = z.object({
 
 /**
  * 採点結果のスキーマ
+ * advice はモデルによって null を返すことがあるため nullish で受ける
  */
 export const ScoringResultSchema = z.object({
     category: z.string(),
     total: z.number().min(0).max(100),
     details: ScoringDetailsSchema,
     reasons: ScoringReasonsSchema,
-    advice: z.string().optional(),
+    advice: z.string().nullish(),
 });
 
 export type ScoringDetails = z.infer<typeof ScoringDetailsSchema>;
@@ -44,54 +51,43 @@ export type ScoringReasons = z.infer<typeof ScoringReasonsSchema>;
 export type ScoringResult = z.infer<typeof ScoringResultSchema>;
 
 /**
+ * 評価軸の定義（UI・エクスポートで共用）
+ */
+export const EVAL_AXES = [
+    { key: "humor", label: "ユーモア", max: 50 },
+    { key: "structure", label: "構成一貫性", max: 20 },
+    { key: "format", label: "記事フォーマット", max: 10 },
+    { key: "language", label: "文章の自然さ", max: 10 },
+    { key: "completeness", label: "完成度", max: 10 },
+] as const satisfies ReadonlyArray<{
+    key: keyof ScoringDetails;
+    label: string;
+    max: number;
+}>;
+
+/**
  * OpenRouter モデル情報のスキーマ
+ * pricing 等は欠けていても一覧表示を壊さないように寛容に受ける
  */
 export const OpenRouterModelSchema = z.object({
     id: z.string(),
-    name: z.string(),
-    context_length: z.number(),
-    pricing: z.object({
-        prompt: z.string(),
-        completion: z.string(),
-    }),
+    name: z.string().optional(),
+    context_length: z.number().nullish(),
 });
 
 export const OpenRouterModelsResponseSchema = z.object({
-    data: z.array(OpenRouterModelSchema),
+    data: z.array(z.unknown()),
 });
 
 export type OpenRouterModel = z.infer<typeof OpenRouterModelSchema>;
 
 /**
- * Gemini モデル情報のスキーマ
- */
-export const GeminiModelSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-});
-
-export type GeminiModel = z.infer<typeof GeminiModelSchema>;
-
-/**
- * Cerebras モデル情報のスキーマ
- */
-export const CerebrasModelSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-});
-
-export type CerebrasModel = z.infer<typeof CerebrasModelSchema>;
-
-/**
  * 共通モデル情報（UI表示用）
  */
-export const ModelInfoSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    provider: ProviderTypeSchema,
-});
-
-export type ModelInfo = z.infer<typeof ModelInfoSchema>;
+export interface ModelInfo {
+    id: string;
+    name: string;
+}
 
 /**
  * 設定のスキーマ
@@ -103,6 +99,34 @@ export const SettingsSchema = z.object({
     cerebrasApiKey: z.string().optional(),
     selectedModel: z.string().optional(),
     temperature: z.number().min(0).max(1).optional(),
+    promptPreset: PromptPresetSchema.optional().default("default"),
+    customPrompt: z.string().optional(),
 });
 
 export type Settings = z.infer<typeof SettingsSchema>;
+
+/**
+ * 採点履歴アイテムのスキーマ
+ */
+export const HistoryItemSchema = z.object({
+    id: z.string(),
+    timestamp: z.number(),
+    title: z.string(),
+    category: z.string(),
+    total: z.number(),
+    result: ScoringResultSchema,
+    model: z.string().optional(),
+    provider: z.string().optional(),
+});
+
+export type HistoryItem = z.infer<typeof HistoryItemSchema>;
+
+/**
+ * Zod のエラーを人間可読な1行メッセージへ
+ */
+export function formatZodError(error: z.ZodError): string {
+    return error.issues
+        .slice(0, 3)
+        .map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`)
+        .join(" / ");
+}

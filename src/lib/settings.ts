@@ -1,93 +1,100 @@
-import { load, Store } from "@tauri-apps/plugin-store";
 import { ResultAsync, okAsync } from "neverthrow";
-import { SettingsSchema, type Settings, type ProviderType } from "./schemas";
+import { SettingsSchema, type Settings } from "./schemas";
+import { getStore } from "./store";
 
 const STORE_PATH = "settings.json";
-
-let storeInstance: Store | null = null;
-
-/**
- * Storeインスタンスを取得
- */
-async function getStore(): Promise<Store> {
-    if (!storeInstance) {
-        storeInstance = await load(STORE_PATH);
-    }
-    return storeInstance;
-}
 
 /**
  * デフォルト設定
  */
-const DEFAULT_SETTINGS: Settings = {
+export const DEFAULT_SETTINGS: Settings = {
     provider: "openrouter",
     openrouterApiKey: undefined,
     geminiApiKey: undefined,
     cerebrasApiKey: undefined,
     selectedModel: undefined,
     temperature: 0.3,
+    promptPreset: "default",
+    customPrompt: undefined,
 };
+
+/** 保存対象のキー一覧（スキーマと同期） */
+const SETTING_KEYS = [
+    "provider",
+    "openrouterApiKey",
+    "geminiApiKey",
+    "cerebrasApiKey",
+    "selectedModel",
+    "temperature",
+    "promptPreset",
+    "customPrompt",
+] as const satisfies ReadonlyArray<keyof Settings>;
 
 /**
  * 設定を読み込む
+ * 不正な値が混ざっていても、その項目だけデフォルトに落として全体は生かす
  */
 export function loadSettings(): ResultAsync<Settings, Error> {
     return ResultAsync.fromPromise(
         (async () => {
-            const store = await getStore();
-            const provider = await store.get<ProviderType>("provider");
-            const openrouterApiKey = await store.get<string>("openrouterApiKey");
-            const geminiApiKey = await store.get<string>("geminiApiKey");
-            const cerebrasApiKey = await store.get<string>("cerebrasApiKey");
-            const selectedModel = await store.get<string>("selectedModel");
-            const temperature = await store.get<number>("temperature");
+            const store = await getStore(STORE_PATH);
+            const raw: Record<string, unknown> = {};
+            for (const key of SETTING_KEYS) {
+                const value = await store.get<unknown>(key);
+                if (value !== null && value !== undefined) {
+                    raw[key] = value;
+                }
+            }
 
-            // 旧形式からのマイグレーション
-            const legacyApiKey = await store.get<string>("apiKey");
-
-            return {
-                provider: provider || "openrouter",
-                openrouterApiKey: openrouterApiKey || legacyApiKey,
-                geminiApiKey,
-                cerebrasApiKey,
-                selectedModel,
-                temperature,
-            };
+            // 旧形式(単一 apiKey)からのマイグレーション
+            if (raw.openrouterApiKey === undefined) {
+                const legacyApiKey = await store.get<string>("apiKey");
+                if (legacyApiKey) {
+                    raw.openrouterApiKey = legacyApiKey;
+                }
+            }
+            return raw;
         })(),
         (error) => new Error(`設定読み込みエラー: ${error}`)
-    ).andThen((data) => {
-        const parsed = SettingsSchema.safeParse(data);
-        if (!parsed.success) {
-            return okAsync(DEFAULT_SETTINGS);
+    ).andThen((raw) => {
+        const parsed = SettingsSchema.safeParse(raw);
+        if (parsed.success) {
+            return okAsync({ ...DEFAULT_SETTINGS, ...parsed.data });
         }
-        return okAsync(parsed.data);
+
+        // 全損させず、項目単位で有効なものだけ拾う
+        const salvaged: Record<string, unknown> = {};
+        for (const key of SETTING_KEYS) {
+            if (!(key in raw)) continue;
+            const single = SettingsSchema.partial().safeParse({ [key]: raw[key] });
+            if (single.success && single.data[key] !== undefined) {
+                salvaged[key] = single.data[key];
+            }
+        }
+        const partial = SettingsSchema.safeParse(salvaged);
+        return okAsync(
+            partial.success ? { ...DEFAULT_SETTINGS, ...partial.data } : DEFAULT_SETTINGS
+        );
     });
 }
 
 /**
- * 設定を保存する
+ * 設定を保存する（渡された項目だけ更新）。
+ * 空文字列はその項目のクリアとして扱い、ストアからキーごと削除する
+ * （APIキーを消して保存しても古い値が復活しないように）。
  */
 export function saveSettings(settings: Partial<Settings>): ResultAsync<void, Error> {
     return ResultAsync.fromPromise(
         (async () => {
-            const store = await getStore();
-            if (settings.provider !== undefined) {
-                await store.set("provider", settings.provider);
-            }
-            if (settings.openrouterApiKey !== undefined) {
-                await store.set("openrouterApiKey", settings.openrouterApiKey);
-            }
-            if (settings.geminiApiKey !== undefined) {
-                await store.set("geminiApiKey", settings.geminiApiKey);
-            }
-            if (settings.cerebrasApiKey !== undefined) {
-                await store.set("cerebrasApiKey", settings.cerebrasApiKey);
-            }
-            if (settings.selectedModel !== undefined) {
-                await store.set("selectedModel", settings.selectedModel);
-            }
-            if (settings.temperature !== undefined) {
-                await store.set("temperature", settings.temperature);
+            const store = await getStore(STORE_PATH);
+            for (const key of SETTING_KEYS) {
+                const value = settings[key];
+                if (value === undefined) continue;
+                if (value === "") {
+                    await store.delete(key);
+                } else {
+                    await store.set(key, value);
+                }
             }
             await store.save();
         })(),
@@ -96,29 +103,15 @@ export function saveSettings(settings: Partial<Settings>): ResultAsync<void, Err
 }
 
 /**
- * 現在のプロバイダのAPIキーが設定されているか確認
- */
-export function hasApiKey(): ResultAsync<boolean, Error> {
-    return loadSettings().map((settings) => {
-        if (settings.provider === "gemini") {
-            return !!settings.geminiApiKey;
-        }
-        if (settings.provider === "cerebras") {
-            return !!settings.cerebrasApiKey;
-        }
-        return !!settings.openrouterApiKey;
-    });
-}
-
-/**
  * 現在のプロバイダのAPIキーを取得
  */
 export function getCurrentApiKey(settings: Settings): string | undefined {
-    if (settings.provider === "gemini") {
-        return settings.geminiApiKey;
+    switch (settings.provider) {
+        case "gemini":
+            return settings.geminiApiKey;
+        case "cerebras":
+            return settings.cerebrasApiKey;
+        default:
+            return settings.openrouterApiKey;
     }
-    if (settings.provider === "cerebras") {
-        return settings.cerebrasApiKey;
-    }
-    return settings.openrouterApiKey;
 }

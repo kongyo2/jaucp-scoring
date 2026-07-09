@@ -5,10 +5,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JAUCP Scoring Tool</title>
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c9a84c'/%3E%3Ctext x='50' y='68' font-size='52' font-weight='bold' text-anchor='middle' fill='%2314120a' font-family='sans-serif'%3EJA%3C/text%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Source+Code+Pro:wght@400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Source+Code+Pro:wght@400;500&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="/src/styles.css" />
 </head>
@@ -18,47 +20,69 @@
     <!-- ヘッダー -->
     <header class="header">
       <h1 class="header-title">
-        <span class="header-icon">📝</span>
-        JAUCP Scoring Tool
+        <span class="header-mark">JA</span>
+        <span class="header-text">UCP Scoring Tool</span>
       </h1>
-      <button id="settings-btn" class="btn btn-icon" title="設定">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path
-            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-          </path>
-        </svg>
-      </button>
+      <div class="header-actions">
+        <span id="provider-chip" class="provider-chip" title="現在のプロバイダ">OpenRouter</span>
+        <button id="settings-btn" class="btn btn-icon" title="設定" aria-label="設定">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+            </path>
+          </svg>
+        </button>
+      </div>
     </header>
 
     <!-- タブバー -->
-    <nav class="tab-bar">
+    <nav class="tab-bar" role="tablist">
       <button class="tab-btn active" data-tab="scoring">採点</button>
-      <button class="tab-btn" data-tab="utility">ユーティリティ</button>
+      <button class="tab-btn" data-tab="inspect">記事検査</button>
+      <button class="tab-btn" data-tab="lookup">記事調査</button>
+      <button class="tab-btn" data-tab="recent">新着・変更</button>
+      <button class="tab-btn" data-tab="history">履歴</button>
+      <button class="tab-btn" data-tab="ogp">OGP画像</button>
     </nav>
 
     <!-- メインコンテンツ -->
     <main class="main">
-      <!-- 採点タブ -->
-      <div id="tab-scoring" class="tab-content active">
-        <!-- 入力セクション -->
-        <section class="input-section">
+      <!-- ============ 採点タブ ============ -->
+      <div id="tab-scoring" class="tab-content">
+        <section class="card input-section">
           <div class="section-header">
             <h2>記事入力</h2>
             <div class="model-selector">
-              <img src="https://svgl.app/library/openrouter_dark.svg" alt="OpenRouter" class="provider-icon"
-                title="OpenRouter" />
               <label for="model-select">モデル:</label>
               <select id="model-select" disabled>
                 <option value="">APIキーを設定してください</option>
               </select>
             </div>
           </div>
+
+          <div class="import-row">
+            <div class="autocomplete-wrap">
+              <input type="text" id="import-title-input" class="form-input"
+                placeholder="アンサイクロペディアの記事名から取込（例: 猫）" />
+            </div>
+            <button id="import-btn" class="btn btn-secondary">
+              <span class="btn-text">読込</span>
+              <span class="btn-loader hidden"></span>
+            </button>
+            <button id="random-btn" class="btn btn-secondary" title="ランダムな記事を読み込む">
+              <span class="btn-text">ランダム</span>
+              <span class="btn-loader hidden"></span>
+            </button>
+          </div>
+
+          <span id="article-title-chip" class="article-title-chip hidden"></span>
+
           <textarea id="article-input" class="article-input"
-            placeholder="ここに記事のウィキテキストを入力してください...&#10;&#10;寄稿前の推敲用に、記事の品質をLLMで採点します。"></textarea>
+            placeholder="ここに記事のウィキテキストを入力してください...&#10;&#10;寄稿前の推敲用に、記事の品質をLLMで採点します。&#10;上の欄から既存記事を読み込んで採点することもできます。"></textarea>
           <div class="input-actions">
-            <span id="char-count" class="char-count">0 文字</span>
+            <span id="char-count" class="char-count">0 文字 / 0 バイト</span>
             <div class="action-buttons">
               <button id="clear-btn" class="btn btn-secondary" type="button">クリア</button>
               <button id="score-btn" class="btn btn-primary" disabled>
@@ -70,29 +94,29 @@
         </section>
 
         <!-- 結果セクション -->
-        <section id="result-section" class="result-section hidden">
+        <section id="result-section" class="card result-section hidden">
           <div class="result-header">
-            <h2>採点結果</h2>
-            <div class="result-meta">
-              <span id="result-category" class="category-badge"></span>
-              <span id="result-total" class="total-score"></span>
+            <div class="result-heading">
+              <h2>採点結果</h2>
+              <span id="result-restored" class="restored-note hidden"></span>
+            </div>
+            <div class="result-actions">
+              <button id="export-wiki-btn" class="btn btn-secondary btn-sm">Wiki表をコピー</button>
+              <button id="export-json-btn" class="btn btn-secondary btn-sm">JSONをコピー</button>
             </div>
           </div>
 
-          <!-- スコアテーブル -->
-          <table class="score-table">
-            <thead>
-              <tr>
-                <th>評価軸</th>
-                <th>満点</th>
-                <th>得点</th>
-                <th>理由</th>
-              </tr>
-            </thead>
-            <tbody id="score-tbody">
-              <!-- 動的に生成 -->
-            </tbody>
-          </table>
+          <div class="result-meta">
+            <div class="total-score-block">
+              <span id="result-total" class="total-score-value">0</span>
+              <span class="total-score-max">/ 100</span>
+            </div>
+            <span id="result-category" class="category-badge"></span>
+          </div>
+
+          <div id="score-list" class="score-list">
+            <!-- 動的に生成 -->
+          </div>
 
           <!-- 改善点 -->
           <div id="advice-section" class="advice-section hidden">
@@ -102,35 +126,160 @@
         </section>
       </div>
 
-      <!-- ユーティリティタブ -->
-      <div id="tab-utility" class="tab-content hidden">
-        <section class="utility-section">
-          <h2>Wikipedia存在確認</h2>
-          <p class="section-description">{{ウィキペディア}}系テンプレートの整備を補助します。記事タイトルを入力して存在を確認、リダイレクトを検出します。</p>
+      <!-- ============ 記事検査タブ ============ -->
+      <div id="tab-inspect" class="tab-content hidden">
+        <section class="card">
+          <div class="section-header">
+            <h2>記事検査</h2>
+            <button id="links-from-scoring" class="btn btn-secondary btn-sm">採点タブの本文を取り込む</button>
+          </div>
+          <p class="section-description">
+            形態素解析による日本語校正・内部リンクの存在確認・リンクにできる語の提案を一括で行います。投稿前の最終チェックに。
+          </p>
+          <textarea id="links-input" class="article-input links-input"
+            placeholder="検査したいウィキテキストを貼り付けてください..."></textarea>
+          <div class="input-actions">
+            <span id="links-progress" class="char-count hidden"></span>
+            <div class="action-buttons">
+              <button id="links-check-btn" class="btn btn-primary">
+                <span class="btn-text">検査する</span>
+                <span class="btn-loader hidden"></span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section id="proofread-result" class="card hidden">
+          <h2>文章校正</h2>
+          <p class="section-description">kuromoji による形態素解析ベースのチェックです（ユーモア記事という性質上、意図的な表現は無視してください）。</p>
+          <div id="proofread-summary" class="summary-chips"></div>
+          <div id="proofread-list" class="links-lists"></div>
+        </section>
+
+        <section id="links-result" class="card hidden">
+          <h2>内部リンク検査</h2>
+          <div id="links-summary" class="summary-chips"></div>
+          <div id="links-lists" class="links-lists"></div>
+        </section>
+
+        <section id="suggest-result" class="card hidden">
+          <h2>リンク候補</h2>
+          <p class="section-description">
+            本文中の語のうち、アンサイクロペディアに記事が存在するのにまだリンクされていないものです。
+          </p>
+          <div id="suggest-summary" class="summary-chips"></div>
+          <div id="suggest-list" class="links-lists"></div>
+        </section>
+      </div>
+
+      <!-- ============ 記事調査タブ ============ -->
+      <div id="tab-lookup" class="tab-content hidden">
+        <section class="card">
+          <h2>記事調査</h2>
+          <p class="section-description">
+            アンサイクロペディアと Wikipedia（日本語版・英語版）での記事の存在をまとめて確認し、{{ウィキペディア}}系テンプレートを生成します。
+          </p>
+
+          <div id="site-stats" class="summary-chips site-stats hidden"></div>
 
           <div class="wiki-check-form">
-            <input type="text" id="wiki-title-input" class="form-input" placeholder="記事タイトル（例: EVE Online）" />
-            <button id="wiki-check-btn" class="btn btn-primary">
-              <span class="btn-text">確認</span>
+            <div class="autocomplete-wrap">
+              <input type="text" id="lookup-title-input" class="form-input" placeholder="記事タイトル（例: EVE Online）" />
+            </div>
+            <button id="lookup-btn" class="btn btn-primary">
+              <span class="btn-text">調査</span>
               <span class="btn-loader hidden"></span>
             </button>
           </div>
 
-          <!-- 結果表示 -->
-          <div id="wiki-result" class="wiki-result hidden">
-            <div class="wiki-status">
-              <span id="wiki-status-icon" class="status-icon"></span>
-              <span id="wiki-status-text" class="status-text"></span>
-            </div>
-            <div id="wiki-redirect-info" class="redirect-info hidden">
-              <span class="redirect-label">リダイレクト先:</span>
-              <span id="wiki-redirect-target" class="redirect-target"></span>
-            </div>
-            <div id="wiki-templates" class="templates-section hidden">
+          <div id="lookup-result" class="lookup-result hidden">
+            <div id="lookup-status-list" class="status-list"></div>
+            <div id="lookup-templates" class="templates-section hidden">
               <h3>貼り付け用テンプレート</h3>
-              <div id="wiki-template-list" class="template-list">
-                <!-- 動的に生成 -->
+              <div id="lookup-template-list" class="template-list"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ============ 新着・変更タブ ============ -->
+      <div id="tab-recent" class="tab-content hidden">
+        <section class="card">
+          <div class="section-header">
+            <h2>新着・最近の変更</h2>
+            <div class="recent-controls">
+              <select id="recent-ns" class="form-select form-select-sm">
+                <option value="0" selected>標準名前空間（記事）</option>
+                <option value="all">すべての名前空間</option>
+              </select>
+              <label class="checkbox-label">
+                <input type="checkbox" id="recent-new-only" />
+                新規のみ
+              </label>
+              <button id="recent-refresh" class="btn btn-secondary btn-sm">
+                <span class="btn-text">更新</span>
+                <span class="btn-loader hidden"></span>
+              </button>
+            </div>
+          </div>
+          <p class="section-description">
+            アンサイクロペディアの最近の変更・新着記事です。気になった記事はその場で採点に回せます。
+          </p>
+          <div id="recent-list" class="recent-list"></div>
+        </section>
+      </div>
+
+      <!-- ============ 履歴タブ ============ -->
+      <div id="tab-history" class="tab-content hidden">
+        <section class="card">
+          <div class="section-header">
+            <h2>採点履歴</h2>
+            <button id="clear-history-btn" class="btn btn-secondary btn-sm" title="すべての履歴を削除">履歴を全削除</button>
+          </div>
+          <p class="section-description">
+            過去の採点結果（最大100件）。クリックすると採点タブに結果を復元します。推敲前後の比較にどうぞ。
+          </p>
+          <div id="history-list" class="history-list"></div>
+        </section>
+      </div>
+
+      <!-- ============ OGP画像タブ ============ -->
+      <div id="tab-ogp" class="tab-content hidden">
+        <section class="card">
+          <h2>OGP画像ジェネレータ</h2>
+          <p class="section-description">
+            記事をSNSで共有するときの OGP 画像（1200×630）を生成します。
+          </p>
+
+          <div class="ogp-form">
+            <div class="form-group">
+              <label for="ogp-title-input">記事タイトル</label>
+              <input type="text" id="ogp-title-input" class="form-input" placeholder="例: EVE Online" />
+            </div>
+            <div class="form-group">
+              <label for="ogp-desc-input">説明文</label>
+              <textarea id="ogp-desc-input" class="form-textarea" rows="3"
+                placeholder="記事の冒頭文など、画像に載せる説明"></textarea>
+            </div>
+            <div class="form-group">
+              <label>画像（任意）</label>
+              <div class="file-input-row">
+                <input type="file" id="ogp-image-input" accept="image/*" class="file-input-hidden" />
+                <button type="button" id="ogp-image-btn" class="btn btn-secondary">ファイルを選択</button>
+                <span id="ogp-image-name" class="file-name-display">選択なし</span>
+                <button type="button" id="ogp-image-clear" class="btn btn-icon hidden" title="画像を削除">✕</button>
               </div>
+            </div>
+            <div class="action-buttons">
+              <button id="ogp-preview-btn" class="btn btn-secondary">プレビュー更新</button>
+              <button id="ogp-download-btn" class="btn btn-primary" disabled>PNG ダウンロード</button>
+            </div>
+          </div>
+
+          <div class="ogp-preview">
+            <canvas id="ogp-preview-canvas" class="ogp-preview-canvas hidden" width="600" height="315"></canvas>
+            <div id="ogp-preview-placeholder" class="ogp-preview-placeholder">
+              「プレビュー更新」を押すとここに画像が表示されます
             </div>
           </div>
         </section>
@@ -150,7 +299,7 @@
       <div class="dialog-content">
         <div class="dialog-header">
           <h2>設定</h2>
-          <button id="close-settings" class="btn btn-icon" title="閉じる">
+          <button id="close-settings" class="btn btn-icon" title="閉じる" aria-label="閉じる">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -194,6 +343,14 @@
             <label for="temperature-slider">Temperature: <span id="temperature-value">0.3</span></label>
             <input type="range" id="temperature-slider" class="form-slider" min="0" max="1" step="0.1" value="0.3" />
             <p class="form-hint">高い値ほど出力がランダムになります（0.0〜1.0）</p>
+          </div>
+          <div class="form-group">
+            <label for="prompt-preset-select">採点プロンプト</label>
+            <select id="prompt-preset-select" class="form-select"></select>
+            <p id="prompt-preset-description" class="form-hint"></p>
+            <textarea id="prompt-textarea" class="form-textarea prompt-textarea" rows="8"
+              spellcheck="false"></textarea>
+            <p class="form-hint">プリセット本文を編集すると自動的に「カスタム」になります。</p>
           </div>
           <div class="dialog-actions">
             <button type="button" id="cancel-settings" class="btn btn-secondary">キャンセル</button>
