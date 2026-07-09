@@ -46,6 +46,9 @@ export function attachAutocomplete(
         activeIndex = -1;
         list.classList.add("hidden");
         list.innerHTML = "";
+        // 進行中のフェッチを無効化し、解決済みの古い候補が再表示されるのを防ぐ
+        controller?.abort();
+        requestToken++;
     }
 
     function render(): void {

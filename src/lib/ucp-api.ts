@@ -328,6 +328,9 @@ export function checkPagesExist(
                     action: "query",
                     prop: "info",
                     titles: batch.join("|"),
+                    // プロキシが自動付与する仕様だが、pages を配列で受ける前提の
+                    // パーサを守るため明示しておく
+                    formatversion: "2",
                 });
 
                 const data = await fetchUcpApi<QueryInfoData>(`?${params}`);

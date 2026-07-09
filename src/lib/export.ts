@@ -7,12 +7,28 @@ export interface ExportContext {
 }
 
 /**
+ * テーブルセル内で列区切りと解釈されないよう "|" を実体参照へ置換する
+ * （LLM の生成する理由・分類は自由テキストのため）
+ */
+function escapeTableCell(text: string): string {
+    return text.replace(/\|/g, "&#124;");
+}
+
+/**
+ * [[リンク]] 構文を壊す文字をタイトルから除去する
+ */
+function sanitizeLinkTitle(title: string): string {
+    return title.replace(/[[\]|{}#]/g, "").trim();
+}
+
+/**
  * 採点結果をアンサイクロペディアのノートに貼れる Wikitext 形式へ変換する
  */
 export function formatAsWikitext(result: ScoringResult, context: ExportContext = {}): string {
     const today = new Date().toLocaleDateString("ja-JP");
-    const caption = context.title
-        ? `[[${context.title}]] のAI採点結果（${today}時点）`
+    const linkTitle = context.title ? sanitizeLinkTitle(context.title) : "";
+    const caption = linkTitle
+        ? `[[${linkTitle}]] のAI採点結果（${today}時点）`
         : `AI採点結果（${today}時点）`;
 
     const lines: string[] = [
@@ -24,11 +40,11 @@ export function formatAsWikitext(result: ScoringResult, context: ExportContext =
     for (const axis of EVAL_AXES) {
         lines.push(
             `|-`,
-            `| ${axis.label} || ${result.details[axis.key]}/${axis.max} || ${result.reasons[axis.key]}`
+            `| ${axis.label} || ${result.details[axis.key]}/${axis.max} || ${escapeTableCell(result.reasons[axis.key])}`
         );
     }
 
-    lines.push(`|-`, `! 合計 !! ${result.total}/100 !! ${result.category}`, `|}`);
+    lines.push(`|-`, `! 合計 !! ${result.total}/100 !! ${escapeTableCell(result.category)}`, `|}`);
 
     let wikitext = lines.join("\n");
 

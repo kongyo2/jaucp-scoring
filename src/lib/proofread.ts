@@ -52,6 +52,73 @@ function stripBraceBlocks(text: string, open: string, close: string): string {
     return result;
 }
 
+/** 地の文から除外する名前空間（カテゴリ・ファイル・言語間） */
+const NON_PROSE_LINK_PREFIX =
+    /^\s*(?:category|カテゴリ|file|ファイル|image|画像|media|メディア|[a-z]{2,3}(?:-[a-z]+)?)\s*:/i;
+
+/**
+ * 内部リンク [[...]] を再帰的に平坦化する。
+ * - カテゴリ・ファイル・言語間リンクはスパンごと除去（キャプション内の入れ子も含む）
+ * - 記事リンクは表示テキストへ置換（表示テキスト内の入れ子リンクも再帰処理）
+ * 単純な正規表現ではネストした [[File:...|説明[[リンク]]...]] で残骸が出るため、
+ * extractInternalLinks と同じ深さ走査で対応する。
+ */
+export function flattenInternalLinks(text: string): string {
+    let result = "";
+    let i = 0;
+    while (i < text.length) {
+        if (text.startsWith("[[", i)) {
+            const start = i;
+            let depth = 1;
+            i += 2;
+            while (i < text.length && depth > 0) {
+                if (text.startsWith("[[", i)) {
+                    depth++;
+                    i += 2;
+                } else if (text.startsWith("]]", i)) {
+                    depth--;
+                    i += 2;
+                } else {
+                    i++;
+                }
+            }
+            if (depth > 0) {
+                // 閉じられていない場合はそのまま残す（構文チェック側が警告する）
+                result += text.slice(start);
+                break;
+            }
+            const inner = text.slice(start + 2, i - 2);
+            if (NON_PROSE_LINK_PREFIX.test(inner)) {
+                continue; // スパンごと除去
+            }
+            const pipeIndex = topLevelPipeIndex(inner);
+            const display = pipeIndex === -1 ? inner : inner.slice(pipeIndex + 1);
+            result += flattenInternalLinks(display);
+        } else {
+            result += text[i];
+            i++;
+        }
+    }
+    return result;
+}
+
+/** 入れ子リンクの内側を無視して、最上位の | の位置を返す */
+function topLevelPipeIndex(inner: string): number {
+    let depth = 0;
+    for (let i = 0; i < inner.length; i++) {
+        if (inner.startsWith("[[", i)) {
+            depth++;
+            i++;
+        } else if (inner.startsWith("]]", i)) {
+            depth--;
+            i++;
+        } else if (inner[i] === "|" && depth === 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 /**
  * ウィキテキストから散文（地の文）を取り出す
  */
@@ -67,10 +134,9 @@ export function extractProse(wikitext: string): string {
     text = text.replace(/<ref[^>]*>[\s\S]*?<\/ref>/gi, "");
     text = text.replace(/<[^>]+>/g, "");
 
-    // リンク（表示テキストへ置換）。カテゴリ・ファイル・言語間リンクは行ごと消えるよう先に除去
-    text = text.replace(/\[\[\s*(?:category|カテゴリ|file|ファイル|image|画像|[a-z]{2,3}(?:-[a-z]+)?)\s*:[^\]]*\]\]/gi, "");
-    text = text.replace(/\[\[[^\]|]*\|([^\]]*)\]\]/g, "$1");
-    text = text.replace(/\[\[([^\]]*)\]\]/g, "$1");
+    // 内部リンク（カテゴリ・ファイル等は除去、記事リンクは表示テキストへ）
+    text = flattenInternalLinks(text);
+    // 外部リンク
     text = text.replace(/\[https?:\/\/[^\s\]]+\s+([^\]]*)\]/g, "$1");
     text = text.replace(/\[https?:\/\/[^\]]*\]/g, "");
     text = text.replace(/https?:\/\/\S+/g, "");
@@ -180,12 +246,18 @@ function checkAdversativeGa(sentences: MorphSentence[]): LintIssue[] {
 function checkDuplicateParticle(sentences: MorphSentence[]): LintIssue[] {
     const issues: LintIssue[] = [];
     for (const sentence of sentences) {
-        let lastSurface = "";
-        let lastKey = "";
-        let seen = false;
+        let prev: MorphToken | null = null;
         for (const token of sentence.tokens) {
-            if (!isParticle(token)) continue;
-            if (seen && token.surface_form === lastSurface && particleKey(token) === lastKey) {
+            if (!isParticle(token)) {
+                prev = null; // 間に他の語を挟んだ再出現（「今日は雨は…」等）は正常なので除外
+                continue;
+            }
+            if (
+                prev &&
+                token.surface_form === prev.surface_form &&
+                particleKey(token) === particleKey(prev) &&
+                tokenOffset(token) === tokenOffset(prev) + prev.surface_form.length
+            ) {
                 issues.push({
                     rule: "duplicate-particle",
                     label: "助詞の重複",
@@ -194,9 +266,7 @@ function checkDuplicateParticle(sentences: MorphSentence[]): LintIssue[] {
                     excerpt: excerptOf(sentence.text),
                 });
             }
-            lastSurface = token.surface_form;
-            lastKey = particleKey(token);
-            seen = true;
+            prev = token;
         }
     }
     return issues;

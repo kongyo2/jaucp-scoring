@@ -79,7 +79,9 @@ export function loadSettings(): ResultAsync<Settings, Error> {
 }
 
 /**
- * 設定を保存する（渡された項目だけ更新）
+ * 設定を保存する（渡された項目だけ更新）。
+ * 空文字列はその項目のクリアとして扱い、ストアからキーごと削除する
+ * （APIキーを消して保存しても古い値が復活しないように）。
  */
 export function saveSettings(settings: Partial<Settings>): ResultAsync<void, Error> {
     return ResultAsync.fromPromise(
@@ -87,7 +89,10 @@ export function saveSettings(settings: Partial<Settings>): ResultAsync<void, Err
             const store = await getStore(STORE_PATH);
             for (const key of SETTING_KEYS) {
                 const value = settings[key];
-                if (value !== undefined) {
+                if (value === undefined) continue;
+                if (value === "") {
+                    await store.delete(key);
+                } else {
                     await store.set(key, value);
                 }
             }

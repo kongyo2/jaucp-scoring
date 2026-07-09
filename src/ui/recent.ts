@@ -20,6 +20,7 @@ export function initRecentTab(): void {
 
     let loaded = false;
     let changes: RecentChange[] = [];
+    let requestToken = 0;
 
     refreshBtn.addEventListener("click", () => void refresh());
     nsSelect.addEventListener("change", () => void refresh());
@@ -33,9 +34,12 @@ export function initRecentTab(): void {
     });
 
     async function refresh(): Promise<void> {
+        // フィルタ連続切替時、後着の古いレスポンスが新しい結果を上書きしないようにする
+        const token = ++requestToken;
         setButtonLoading(refreshBtn, true, "更新", "取得中...");
         const ns = nsSelect.value === "all" ? undefined : Number(nsSelect.value);
         const result = await fetchRecentChanges(50, ns);
+        if (token !== requestToken) return;
         setButtonLoading(refreshBtn, false, "更新", "取得中...");
 
         result.match(

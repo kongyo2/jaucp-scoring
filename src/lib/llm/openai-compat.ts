@@ -28,6 +28,9 @@ export interface ChatRequestOptions {
     providerLabel: string;
 }
 
+/** 採点リクエストの上限時間。応答しないプロバイダで「採点中...」のまま固まるのを防ぐ */
+const CHAT_TIMEOUT_MS = 120_000;
+
 /**
  * chat/completions を呼び、アシスタントの応答テキストを返す
  */
@@ -36,15 +39,30 @@ export function chatCompletion(options: ChatRequestOptions): ResultAsync<string,
 
     return ResultAsync.fromPromise(
         (async () => {
-            const response = await fetch(`${baseUrl}/chat/completions`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    "Content-Type": "application/json",
-                    ...extraHeaders,
-                },
-                body: JSON.stringify({ model, messages, temperature }),
-            });
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), CHAT_TIMEOUT_MS);
+            let response: Response;
+            try {
+                response = await fetch(`${baseUrl}/chat/completions`, {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        "Content-Type": "application/json",
+                        ...extraHeaders,
+                    },
+                    body: JSON.stringify({ model, messages, temperature }),
+                    signal: controller.signal,
+                });
+            } catch (error) {
+                if (error instanceof DOMException && error.name === "AbortError") {
+                    throw new Error(
+                        `${providerLabel} API がタイムアウトしました（${CHAT_TIMEOUT_MS / 1000}秒）`
+                    );
+                }
+                throw error;
+            } finally {
+                clearTimeout(timeoutId);
+            }
 
             if (!response.ok) {
                 const errorText = await response.text();

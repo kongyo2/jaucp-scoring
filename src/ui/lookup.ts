@@ -31,6 +31,7 @@ export function initLookupTab(): void {
     const statsBox = $<HTMLDivElement>("site-stats");
 
     let statsLoaded = false;
+    let running = false;
 
     // アンサイクロペディアとWikipedia(ja)の両方から補完候補を出す
     attachAutocomplete(titleInput, {
@@ -110,17 +111,24 @@ export function initLookupTab(): void {
             showToast("記事タイトルを入力してください", "error");
             return;
         }
+        // Enter 連打等による並行実行を防ぐ（後着の結果が先着を上書きしないように）
+        if (running) return;
+        running = true;
 
         setButtonLoading(lookupBtn, true, "調査", "調査中...");
         resultBox.classList.add("hidden");
 
-        const [ucpResult, jaResult, enResult] = await Promise.all([
-            checkPageExists(title),
-            checkWikipediaJa(title),
-            checkWikipediaEn(title),
-        ]);
-
-        setButtonLoading(lookupBtn, false, "調査", "調査中...");
+        let ucpResult, jaResult, enResult;
+        try {
+            [ucpResult, jaResult, enResult] = await Promise.all([
+                checkPageExists(title),
+                checkWikipediaJa(title),
+                checkWikipediaEn(title),
+            ]);
+        } finally {
+            running = false;
+            setButtonLoading(lookupBtn, false, "調査", "調査中...");
+        }
 
         statusList.innerHTML = "";
 
@@ -176,16 +184,19 @@ export function initLookupTab(): void {
             (error) => statusList.appendChild(buildErrorRow("Wikipedia 英語版", error.message))
         );
 
-        // --- テンプレート生成（Wikipedia結果が両方とも取得失敗なら省略） ---
+        // --- テンプレート生成 ---
+        // 日本語版の確認に失敗した場合は生成しない（{{ウィキペディア無し}} を
+        // 「確認失敗」なのに提示してしまう誤誘導を防ぐ）。
+        // 英語版のみ失敗した場合は、英語版依存のテンプレートだけが出なくなる。
         templateList.innerHTML = "";
-        if (jaCheck || enCheck) {
-            const fallback: WikipediaCheckResult = {
+        if (jaCheck) {
+            const enFallback: WikipediaCheckResult = {
                 exists: false,
                 isRedirect: false,
                 isDisambiguation: false,
                 title,
             };
-            const templates = generateTemplates(jaCheck ?? fallback, enCheck ?? fallback);
+            const templates = generateTemplates(jaCheck, enCheck ?? enFallback);
             for (const template of templates) {
                 const code = el("code", { className: "template-code", text: template.template });
                 const copyBtn = el("button", {

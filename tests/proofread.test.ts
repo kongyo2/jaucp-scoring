@@ -75,6 +75,11 @@ describe("proofreadWikitext: wakame 移植ルール（形態素解析）", () =>
         expect(rulesOf(issues)).toContain("duplicate-particle");
     });
 
+    it("間に語を挟んだ同一助詞の再出現（今日は雨は…）は検出しない", async () => {
+        const issues = await proofreadWikitext(withCategory("今日は雨は降らない。"));
+        expect(rulesOf(issues)).not.toContain("duplicate-particle");
+    });
+
     it("同じ接続詞の連続を検出する", async () => {
         const issues = await proofreadWikitext(
             withCategory("しかし彼は寝た。しかし彼は起きた。")
@@ -179,5 +184,22 @@ describe("extractProse", () => {
     it("ref タグを除去する", () => {
         const prose = extractProse("事実である<ref>出典</ref>。");
         expect(prose).toBe("事実である。");
+    });
+
+    it("キャプションに入れ子リンクを含むファイルリンクを残骸なく除去する", () => {
+        const prose = extractProse(
+            "[[File:x.jpg|thumb|説明[[イカ]]の話]]あとがきである。"
+        );
+        expect(prose).toBe("あとがきである。");
+    });
+
+    it("記事リンクの表示テキスト内の入れ子リンクも平坦化する", () => {
+        const prose = extractProse("[[記事|とある[[別記事|表示]]の話]]である。");
+        expect(prose).toBe("とある表示の話である。");
+    });
+
+    it("カテゴリ・言語間リンクは行ごと消える", () => {
+        const prose = extractProse("本文である。\n[[Category:ネタ]]\n[[en:Squid]]");
+        expect(prose).toBe("本文である。");
     });
 });

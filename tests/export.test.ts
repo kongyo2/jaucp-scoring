@@ -46,6 +46,23 @@ describe("formatAsWikitext", () => {
         const text = formatAsWikitext({ ...RESULT, advice: undefined });
         expect(text).not.toContain("改善アドバイス");
     });
+
+    it("理由・分類中の | をエスケープして表組みを守る", () => {
+        const withPipe = {
+            ...RESULT,
+            category: "おバカ系|脱力系",
+            reasons: { ...RESULT.reasons, humor: "AとB|どちらも面白い" },
+        };
+        const text = formatAsWikitext(withPipe);
+        expect(text).toContain("AとB&#124;どちらも面白い");
+        expect(text).toContain("おバカ系&#124;脱力系");
+        expect(text).not.toContain("AとB|どちらも面白い");
+    });
+
+    it("リンク構文を壊すタイトル文字を除去する", () => {
+        const text = formatAsWikitext(RESULT, { title: "壊れた]]タイトル|X" });
+        expect(text).toContain("[[壊れたタイトルX]]");
+    });
 });
 
 describe("formatAsJson", () => {

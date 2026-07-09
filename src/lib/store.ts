@@ -9,6 +9,7 @@ import { load } from "@tauri-apps/plugin-store";
 export interface IStore {
     get<T>(key: string): Promise<T | null>;
     set(key: string, value: unknown): Promise<void>;
+    delete(key: string): Promise<void>;
     save(): Promise<void>;
 }
 
@@ -36,6 +37,10 @@ class LocalStorageStore implements IStore {
         this.data[key] = value;
     }
 
+    async delete(key: string): Promise<void> {
+        delete this.data[key];
+    }
+
     async save(): Promise<void> {
         try {
             localStorage.setItem(this.path, JSON.stringify(this.data));
@@ -48,7 +53,7 @@ class LocalStorageStore implements IStore {
 const stores = new Map<string, Promise<IStore>>();
 
 function isTauri(): boolean {
-    return "__TAURI_INTERNALS__" in window;
+    return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 }
 
 async function createStore(path: string): Promise<IStore> {
@@ -61,6 +66,9 @@ async function createStore(path: string): Promise<IStore> {
                     return value === undefined ? null : value;
                 },
                 set: (key, value) => store.set(key, value),
+                async delete(key: string): Promise<void> {
+                    await store.delete(key);
+                },
                 save: () => store.save(),
             };
         } catch (e) {

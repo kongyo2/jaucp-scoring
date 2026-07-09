@@ -2,11 +2,21 @@ import { ResultAsync } from "neverthrow";
 import { GoogleGenAI } from "@google/genai";
 import type { ModelInfo } from "../schemas";
 
+/** ネットワーク不調時に UI が待機し続けないためのリクエスト上限時間 */
+const GEMINI_TIMEOUT_MS = 120_000;
+
+function createClient(apiKey: string): GoogleGenAI {
+    return new GoogleGenAI({
+        apiKey,
+        httpOptions: { timeout: GEMINI_TIMEOUT_MS },
+    });
+}
+
 /**
  * Gemini API から利用可能なモデル一覧を動的取得
  */
 export function fetchGeminiModels(apiKey: string): ResultAsync<ModelInfo[], Error> {
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = createClient(apiKey);
 
     return ResultAsync.fromPromise(
         (async () => {
@@ -45,7 +55,7 @@ export function geminiGenerate(
     userContent: string,
     temperature: number
 ): ResultAsync<string, Error> {
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = createClient(apiKey);
 
     return ResultAsync.fromPromise(
         (async () => {

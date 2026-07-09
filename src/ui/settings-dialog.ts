@@ -105,11 +105,15 @@ export function initSettingsDialog(): void {
 
         const temperature = Number.parseFloat(temperatureSlider.value);
         const preset = currentPreset();
+        // 空文字は saveSettings 側で「キーの削除」として扱われる（クリアの永続化）
+        const apiKeys = {
+            openrouterApiKey: keyInputs.openrouter.value.trim(),
+            geminiApiKey: keyInputs.gemini.value.trim(),
+            cerebrasApiKey: keyInputs.cerebras.value.trim(),
+        };
         const newSettings: Partial<Settings> = {
             provider: providerSelect.value as ProviderType,
-            openrouterApiKey: keyInputs.openrouter.value.trim() || undefined,
-            geminiApiKey: keyInputs.gemini.value.trim() || undefined,
-            cerebrasApiKey: keyInputs.cerebras.value.trim() || undefined,
+            ...apiKeys,
             temperature: Number.isNaN(temperature) ? DEFAULT_TEMPERATURE : temperature,
             promptPreset: preset,
             customPrompt:
@@ -119,7 +123,14 @@ export function initSettingsDialog(): void {
         const result = await saveSettings(newSettings);
         result.match(
             () => {
-                appState.settings = { ...appState.settings, ...newSettings };
+                appState.settings = {
+                    ...appState.settings,
+                    ...newSettings,
+                    // メモリ上は空文字ではなく未設定として保持する
+                    openrouterApiKey: apiKeys.openrouterApiKey || undefined,
+                    geminiApiKey: apiKeys.geminiApiKey || undefined,
+                    cerebrasApiKey: apiKeys.cerebrasApiKey || undefined,
+                };
                 emit("settings-changed", {});
                 showToast("設定を保存しました", "success");
             },

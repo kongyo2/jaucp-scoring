@@ -199,12 +199,17 @@ export function initScoringTab(): void {
         const content = articleInput.value;
         if (!content.trim()) return;
 
+        // 採点中に記事の再読込や設定変更が行われても結果が正しくラベル付けされるよう、
+        // await の前にコンテキストを確定させる
+        const settings = { ...appState.settings };
+        const title = appState.articleTitle ?? deriveTitleFromWikitext(content);
+
         appState.isScoring = true;
         setButtonLoading(scoreBtn, true, "採点する", "採点中...");
         hideError();
         resultSection.classList.add("hidden");
 
-        const result = await scoreArticle(appState.settings, content);
+        const result = await scoreArticle(settings, content);
 
         appState.isScoring = false;
         setButtonLoading(scoreBtn, false, "採点する", "採点中...");
@@ -212,16 +217,15 @@ export function initScoringTab(): void {
 
         result.match(
             (scoring) => {
-                const title = appState.articleTitle ?? deriveTitleFromWikitext(content);
                 displayScoringResult(scoring, {
                     title,
-                    model: appState.settings.selectedModel,
+                    model: settings.selectedModel,
                 });
                 void addHistory({
                     result: scoring,
                     title,
-                    model: appState.settings.selectedModel,
-                    provider: appState.settings.provider,
+                    model: settings.selectedModel,
+                    provider: settings.provider,
                 });
             },
             (error) => showError(error.message)

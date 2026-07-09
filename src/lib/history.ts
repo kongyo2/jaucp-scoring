@@ -6,6 +6,18 @@ const STORE_PATH = "history.json";
 const HISTORY_KEY = "history";
 const MAX_HISTORY_ITEMS = 100;
 
+/**
+ * 履歴の変更操作（read-modify-write）を直列化するキュー。
+ * 追加と削除が並行すると後勝ちで更新が消えるため、順番に実行する。
+ */
+let mutationQueue: Promise<unknown> = Promise.resolve();
+
+function enqueueMutation<T>(operation: () => Promise<T>): Promise<T> {
+    const next = mutationQueue.then(operation, operation);
+    mutationQueue = next.catch(() => undefined);
+    return next;
+}
+
 export interface AddHistoryInput {
     result: ScoringResult;
     title: string;
@@ -18,7 +30,7 @@ export interface AddHistoryInput {
  */
 export function addHistory(input: AddHistoryInput): ResultAsync<HistoryItem, Error> {
     return ResultAsync.fromPromise(
-        (async () => {
+        enqueueMutation(async () => {
             const store = await getStore(STORE_PATH);
             const current = await readValidHistory(store.get.bind(store));
 
@@ -37,7 +49,7 @@ export function addHistory(input: AddHistoryInput): ResultAsync<HistoryItem, Err
             await store.set(HISTORY_KEY, next);
             await store.save();
             return newItem;
-        })(),
+        }),
         (error) => new Error(`履歴保存エラー: ${error}`)
     );
 }
@@ -61,11 +73,11 @@ export function getHistory(): ResultAsync<HistoryItem[], Error> {
  */
 export function clearHistory(): ResultAsync<void, Error> {
     return ResultAsync.fromPromise(
-        (async () => {
+        enqueueMutation(async () => {
             const store = await getStore(STORE_PATH);
             await store.set(HISTORY_KEY, []);
             await store.save();
-        })(),
+        }),
         (error) => new Error(`履歴削除エラー: ${error}`)
     );
 }
@@ -75,7 +87,7 @@ export function clearHistory(): ResultAsync<void, Error> {
  */
 export function removeHistoryItem(id: string): ResultAsync<void, Error> {
     return ResultAsync.fromPromise(
-        (async () => {
+        enqueueMutation(async () => {
             const store = await getStore(STORE_PATH);
             const current = await readValidHistory(store.get.bind(store));
             await store.set(
@@ -83,7 +95,7 @@ export function removeHistoryItem(id: string): ResultAsync<void, Error> {
                 current.filter((item) => item.id !== id)
             );
             await store.save();
-        })(),
+        }),
         (error) => new Error(`履歴削除エラー: ${error}`)
     );
 }
