@@ -1,6 +1,6 @@
 # JAUCP Scoring Tool
 
-日本語版アンサイクロペディアの記事採点ツール。AI（LLM）を使用して記事の品質を自動評価します。
+日本語版アンサイクロペディアの執筆支援ツールボックス。AI（LLM）による記事採点を中心に、内部リンク検査・記事調査・新着パトロール・OGP画像生成まで、執筆者とコミュニティのための機能をまとめたデスクトップアプリです。
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/kongyo2/jaucp-scoring)
 
@@ -8,18 +8,18 @@
 
 ## 📋 目次
 
-- [[このツールについて]](#このツールについて)
-- [[機能]](#機能)
-- [[インストール方法]](#インストール方法)
-- [[使い方]](#使い方)
-- [[開発者向け情報]](#開発者向け情報)
-- [[ライセンス]](#ライセンス)
+- [このツールについて](#このツールについて)
+- [機能](#機能)
+- [インストール方法](#インストール方法)
+- [使い方](#使い方)
+- [開発者向け情報](#開発者向け情報)
+- [ライセンス](#ライセンス)
 
 ---
 
 ## このツールについて
 
-このツールは、日本語版アンサイクロペディアに記事を投稿する前に、その品質をAIで採点するためのデスクトップアプリケーションです。
+このツールは、日本語版アンサイクロペディアに記事を投稿する前の推敲を支援するデスクトップアプリケーションです。AI採点に加え、[コミュニティに公開されているAPIプロキシ](https://kongyo.f5.si/api) を通じてアンサイクロペディア本体と連携し、記事の取込・存在確認・新着記事の確認などができます。
 
 ### 評価項目
 
@@ -37,19 +37,49 @@
 
 ## 機能
 
-### 主な機能
+### 採点タブ
 
-- 🤖 **AI採点**: OpenRouter、Google Gemini、Cerebrasを使った自動採点
-- 📊 **詳細評価**: 5つの評価軸ごとに得点と理由を表示
+- 🤖 **AI採点**: OpenRouter、Google Gemini、Cerebras を使った自動採点
+- 📊 **詳細評価**: 5つの評価軸ごとに得点バー・理由を表示
 - 💡 **改善提案**: 60点未満の記事には改善アドバイスを提示
-- 🔧 **Wikipedia存在確認**: {{ウィキペディア}}テンプレート整備を補助
-- 🎨 **ダークテーマ**: 目に優しいエディトリアル風デザイン
+- 📥 **記事取込**: 記事名を入力（入力補完つき）して既存記事のウィキテキストを直接読み込み。リダイレクトは自動解決
+- 🎲 **ランダム記事**: ランダムな既存記事を読み込んで採点・レビュー
+- 📋 **結果エクスポート**: ノートページに貼れる Wikitext 表（署名付き）／JSON をワンクリックでコピー
+- 🎭 **採点プロンプトのプリセット**: 通常（削除主義者レビュアー）／厳格なウィキペディアン（ユーモアを裁く逆説モード）／カスタム編集
+
+### リンク検査タブ
+
+- 🔗 **内部リンク抽出**: 記事中の `[[内部リンク]]` を名前空間別（記事・カテゴリ・ファイル・言語間・プロジェクト）に分類
+- 🔴 **赤リンク検出**: 記事リンクの存在をアンサイクロペディアAPIで一括確認し、存在しないリンク・リダイレクト経由のリンクを警告
+- 🔍 そのまま「記事調査」タブへ飛んで詳細確認も可能
+
+### 記事調査タブ
+
+- 🌐 **三方向の存在確認**: アンサイクロペディア／Wikipedia日本語版／Wikipedia英語版での記事の存在をまとめて確認
+- 🧩 **テンプレート生成**: `{{ウィキペディア}}` `{{ウィキペディア2}}` `{{ウィキペディア無し}}` などを状況に応じて自動生成
+- ⌨️ **入力補完**: アンサイクロペディアとWikipediaの両方からタイトル候補を表示（IME対応）
+- 📈 **サイト統計**: 記事数・総編集回数などをさりげなく表示
+
+### 新着・変更タブ
+
+- 🆕 **最近の変更・新着記事の一覧**: 新着パトロールのお供に
+- ⚡ **ワンクリック採点**: 気になった新着記事をその場で採点タブへ読み込み
+
+### 履歴タブ
+
+- 🕰️ **採点履歴タイムライン**: 過去の採点結果を自動保存（最大100件）。クリックで結果を復元し、推敲前後の比較に
+
+### OGP画像タブ
+
+- 🖼️ **OGP画像ジェネレータ**: 記事共有用の 1200×630 画像を生成・PNGダウンロード（[ja-ucp-ogp](https://github.com/kongyo2/ja-ucp-ogp) 由来）
 
 ### 対応プロバイダ
 
-- **OpenRouter**: 複数のAIモデルから選択可能（Claude、GPT-4など）
+- **OpenRouter**: 複数のAIモデルから選択可能（Claude、GPT系など）
 - **Google Gemini**: Geminiシリーズのモデルを直接利用
 - **Cerebras**: 超高速推論（Llama 3.3 70B など）
+
+> 💡 本ツールのアンサイクロペディア連携は、コミュニティに公開されている MediaWiki API プロキシ `https://kongyo.f5.si/api`（Cloudflare チャレンジ回避・CORS対応済み）を利用しています。
 
 ---
 
@@ -57,7 +87,7 @@
 
 ### 📦 簡単インストール（Windows）
 
-1. [[Releases](https://github.com/kongyo2/jaucp-scoring/releases)](https://github.com/kongyo2/jaucp-scoring/releases) ページにアクセス
+1. [Releases](https://github.com/kongyo2/jaucp-scoring/releases) ページにアクセス
 2. 最新版の `.msi` または `.exe` ファイルをダウンロード
 3. ダウンロードしたファイルを実行してインストール
 
@@ -75,7 +105,7 @@
 
 **Windowsの場合:**
 
-1. [[Node.js公式サイト](https://nodejs.org/)](https://nodejs.org/) にアクセス
+1. [Node.js公式サイト](https://nodejs.org/) にアクセス
 2. 「LTS」版（推奨版）をダウンロード
 3. インストーラーを実行し、すべてデフォルトのままインストール
 
@@ -100,7 +130,7 @@ npm --version
 
 **Windowsの場合:**
 
-1. [[rustup公式サイト](https://rustup.rs/)](https://rustup.rs/) にアクセス
+1. [rustup公式サイト](https://rustup.rs/) にアクセス
 2. 「rustup-init.exe」をダウンロードして実行
 3. コマンドプロンプトが開くので、`1`を入力してEnter（デフォルトインストール）
 
@@ -172,6 +202,8 @@ npm run tauri build
 
 ビルドが完了すると、`src-tauri/target/release/bundle/` にインストーラーが生成されます。
 
+> 🌐 ブラウザ版: `npm run dev` で通常のブラウザでも動作します（設定・履歴は localStorage に保存）。
+
 ---
 
 ## 使い方
@@ -184,9 +216,9 @@ npm run tauri build
 
 複数のAIモデルを1つのAPIキーで利用できるサービスです。
 
-1. [OpenRouter](https://openrouter.ai/)にアクセス
+1. [OpenRouter](https://openrouter.ai/) にアクセス
 2. 「Sign In」から新規登録（GitHubアカウントなどでログイン可能）
-3. ログイン後、[[API Keys](https://openrouter.ai/keys)](https://openrouter.ai/keys) ページに移動
+3. ログイン後、[API Keys](https://openrouter.ai/keys) ページに移動
 4. 「Create Key」をクリックしてAPIキーを作成
 5. 表示されたキー（`sk-or-...`で始まる文字列）をコピー
 
@@ -194,35 +226,30 @@ npm run tauri build
 
 **💰 料金について:**
 - 従量課金制（使った分だけ支払い）
-- クレジットカード登録が必要
 - モデルによって料金が異なる（1記事あたり数円〜数十円程度）
-- 初回$5分の無料クレジットあり
 
 #### 🔹 Google Gemini
 
 Googleの提供するAIサービスです。
 
-1. [[Google AI Studio](https://aistudio.google.com/apikey)](https://aistudio.google.com/apikey) にアクセス
+1. [Google AI Studio](https://aistudio.google.com/apikey) にアクセス
 2. Googleアカウントでログイン
 3. 「Get API Key」→「Create API key」をクリック
 4. 表示されたキー（`AIza...`で始まる文字列）をコピー
 
 **💰 料金について:**
-- 無料枠が大きい（月60リクエスト/分まで無料）
-- 無料枠を超えると従量課金
-- クレジットカード登録不要（無料枠内なら）
+- 無料枠が大きく、クレジットカード登録不要（無料枠内なら）
 
 #### 🔹 Cerebras（高速推論）
 
-世界最速のAI推論を提供するサービスです。OpenAIやAnthropicの約20倍高速。
+世界最速級のAI推論を提供するサービスです。
 
-1. [[Cerebras Cloud](https://cloud.cerebras.ai/)](https://cloud.cerebras.ai/) にアクセス
+1. [Cerebras Cloud](https://cloud.cerebras.ai/) にアクセス
 2. アカウントを作成してログイン
 3. APIキーを作成してコピー
 
 **💰 料金について:**
 - **無料枠あり**: すべてのモデルに無料でアクセス可能
-- **Developer ($10〜)**: 10倍のレート制限、優先処理
 - 推奨モデル: `llama-3.3-70b`（高速かつ高品質）
 
 ### 2. ツールの設定
@@ -232,26 +259,31 @@ Googleの提供するAIサービスです。
 3. 設定画面で以下を入力:
    - **プロバイダ**: OpenRouter、Gemini、またはCerebrasを選択
    - **APIキー**: コピーしたAPIキーを貼り付け
+   - **Temperature**: 出力のランダム度（既定 0.3）
+   - **採点プロンプト**: プリセット選択、または自由に編集（編集すると自動的にカスタム扱い）
 4. 「保存」をクリック
 
 設定が完了すると、モデル一覧が自動的に読み込まれます。
 
 ### 3. 記事の採点
 
-1. **モデルを選択**: ヘッダーのドロップダウンから使用するAIモデルを選択
-2. **記事を入力**: 評価したい記事のウィキテキストを入力欄に貼り付け
+1. **モデルを選択**: 入力欄上のドロップダウンから使用するAIモデルを選択
+2. **記事を入力**: ウィキテキストを貼り付けるか、記事名を入力して「読込」（「ランダム」で運試しも可）
 3. **採点する**: 「採点する」ボタンをクリック
-4. **結果を確認**: 数秒〜数十秒で採点結果が表示されます
+4. **結果を確認**: 合計点・評価軸ごとの得点バー・理由・改善点が表示されます
+5. **共有**: 「Wiki表をコピー」でノートページ用の表（署名付き）をコピー
 
-### 4. Wikipedia存在確認（ユーティリティ機能）
+### 4. 投稿前のリンク検査
 
-`{{ウィキペディア}}`系テンプレートの整備を補助する機能です。
+1. 「リンク検査」タブで本文を貼り付け（採点タブから取込ボタンもあります）
+2. 「検査する」をクリック
+3. 赤リンク・リダイレクト経由リンクを確認し、必要なら「調査」で詳細を確認
 
-1. 「ユーティリティ」タブをクリック
-2. 記事タイトルを入力
-3. 「確認」をクリック
-4. 日本語版・英語版Wikipediaの存在、リダイレクト状況を確認
-5. 適切なテンプレートコードが自動生成されるので、コピーして使用
+### 5. 記事調査（存在確認 + テンプレート生成）
+
+1. 「記事調査」タブで記事タイトルを入力（補完が出ます）
+2. 「調査」をクリック
+3. アンサイクロペディア・Wikipedia日英の存在状況と、貼り付け用テンプレートを確認
 
 ---
 
@@ -259,39 +291,50 @@ Googleの提供するAIサービスです。
 
 ### 技術スタック
 
-- **フロントエンド**: TypeScript, Vite
+- **フロントエンド**: TypeScript, Vite（フレームワークレス）
 - **バックエンド**: Tauri 2.x (Rust)
 - **検証**: Zod, neverthrow
-- **スタイル**: CSS（カスタムダークテーマ）
+- **テスト**: Vitest
+- **スタイル**: CSS（ダーク×ゴールドのカスタムテーマ）
 
 ### ディレクトリ構造
 
 ```
 jaucp-scoring/
-├── src/               # フロントエンド（TypeScript）
-│   ├── lib/          # ビジネスロジック
-│   │   ├── cerebras.ts   # Cerebras API連携
-│   │   ├── gemini.ts     # Gemini API連携
-│   │   ├── models.ts     # OpenRouterモデル管理
-│   │   ├── schemas.ts    # Zodスキーマ定義
-│   │   ├── scoring.ts    # 採点ロジック
-│   │   ├── settings.ts   # 設定管理
-│   │   └── wikipedia.ts  # Wikipedia API連携
-│   ├── main.ts       # エントリーポイント
-│   └── styles.css    # スタイル定義
-├── src-tauri/        # バックエンド（Rust）
-│   ├── src/
-│   │   ├── lib.rs    # メインロジック
-│   │   └── main.rs   # エントリーポイント
-│   └── Cargo.toml    # Rust依存関係
-├── index.html        # HTMLテンプレート
-└── package.json      # Node依存関係
+├── src/                   # フロントエンド（TypeScript）
+│   ├── lib/               # ビジネスロジック（UI非依存）
+│   │   ├── llm/           # LLMプロバイダ統合
+│   │   │   ├── index.ts       # 採点ディスパッチャ
+│   │   │   ├── parse.ts       # 採点JSONの抽出・検証（共通）
+│   │   │   ├── openai-compat.ts # OpenAI互換API共通実装
+│   │   │   ├── openrouter.ts  # OpenRouter
+│   │   │   ├── gemini.ts      # Google Gemini
+│   │   │   └── cerebras.ts    # Cerebras
+│   │   ├── ucp-api.ts     # アンサイクロペディアAPIプロキシクライアント
+│   │   ├── wikipedia.ts   # Wikipedia API連携
+│   │   ├── wikitext.ts    # 内部リンク抽出・分類
+│   │   ├── autocomplete.ts# タイトル入力補完
+│   │   ├── history.ts     # 採点履歴
+│   │   ├── export.ts      # Wikitext/JSONエクスポート
+│   │   ├── ogp.ts         # OGP画像生成
+│   │   ├── prompts.ts     # 採点プロンプトプリセット
+│   │   ├── schemas.ts     # Zodスキーマ定義
+│   │   ├── settings.ts    # 設定管理
+│   │   ├── store.ts       # ストア抽象化（Tauri / localStorage）
+│   │   └── dom.ts         # DOMユーティリティ・トースト
+│   ├── ui/                # タブごとのUIモジュール
+│   ├── main.ts            # エントリーポイント
+│   └── styles.css         # スタイル定義
+├── tests/                 # Vitest ユニットテスト
+├── src-tauri/             # バックエンド（Rust）
+├── index.html             # HTMLテンプレート
+└── package.json           # Node依存関係
 ```
 
 ### スクリプト
 
 ```bash
-# 開発サーバー起動
+# 開発サーバー起動（ブラウザで動作確認）
 npm run dev
 
 # Tauriアプリを開発モードで起動
@@ -302,6 +345,9 @@ npm run tauri build
 
 # Linter実行
 npm run lint
+
+# テスト実行
+npm test
 ```
 
 ### トラブルシューティング
@@ -325,6 +371,11 @@ cd ..
 - インターネット接続を確認
 - OpenRouterの場合、クレジット残高を確認
 
+#### アンサイクロペディア連携が失敗する
+
+- プロキシAPI (`https://kongyo.f5.si/api`) の稼働状況を確認（`/health` エンドポイント）
+- 一時的な上流エラー（Cloudflareチャレンジ等）の場合は少し待って再試行
+
 #### アプリが起動しない（Windows）
 
 - Windows Defenderで誤検知されている可能性
@@ -332,21 +383,23 @@ cd ..
 
 ---
 
+## 謝辞・由来
+
+- 採点プロンプトは [Portal:AI活用/公開プロンプト置き場](https://ja.uncyclopedia.info/wiki/Portal:AI%E6%B4%BB%E7%94%A8/%E5%85%AC%E9%96%8B%E3%83%97%E3%83%AD%E3%83%B3%E3%83%97%E3%83%88%E7%BD%AE%E3%81%8D%E5%A0%B4) のもの（ノイマン氏）を使用
+- プロンプトプリセット・採点履歴・Wikitextエクスポート・OGP生成などの機能は、フォーク版 [kaji11-jp/jaucp-scoring-plus](https://github.com/kaji11-jp/jaucp-scoring-plus) のアイデアを取り込んだものです
+- 内部リンク検査は kongyo2 の内部リンク整備ツールのパーサを簡略移植
+
 ## ライセンス
 
 MIT License
-
-
-
-
 
 ---
 
 ## 関連リンク
 
-- [[日本語版アンサイクロペディア](https://ja.uncyclopedia.info/)](https://ja.uncyclopedia.info/)
-- [[Portal:AI活用/公開プロンプト置き場](https://ja.uncyclopedia.info/wiki/Portal:AI%E6%B4%BB%E7%94%A8/%E5%85%AC%E9%96%8B%E3%83%97%E3%83%AD%E3%83%B3%E3%83%97%E3%83%88%E7%BD%AE%E3%81%8D%E5%A0%B4)](https://ja.uncyclopedia.info/wiki/Portal:AI%E6%B4%BB%E7%94%A8/%E5%85%AC%E9%96%8B%E3%83%97%E3%83%AD%E3%83%B3%E3%83%97%E3%83%88%E7%BD%AE%E3%81%8D%E5%A0%B4)
-- [[OpenRouter Documentation](https://openrouter.ai/docs)](https://openrouter.ai/docs)
-- [[Google AI Studio](https://aistudio.google.com/)](https://aistudio.google.com/)
-- [[Cerebras Inference Docs](https://inference-docs.cerebras.ai/)](https://inference-docs.cerebras.ai/)
-- [[Cerebras Cloud](https://cloud.cerebras.ai/)](https://cloud.cerebras.ai/)
+- [日本語版アンサイクロペディア](https://ja.uncyclopedia.info/)
+- [Portal:AI活用/公開プロンプト置き場](https://ja.uncyclopedia.info/wiki/Portal:AI%E6%B4%BB%E7%94%A8/%E5%85%AC%E9%96%8B%E3%83%97%E3%83%AD%E3%83%B3%E3%83%97%E3%83%88%E7%BD%AE%E3%81%8D%E5%A0%B4)
+- [OpenRouter Documentation](https://openrouter.ai/docs)
+- [Google AI Studio](https://aistudio.google.com/)
+- [Cerebras Inference Docs](https://inference-docs.cerebras.ai/)
+- [Cerebras Cloud](https://cloud.cerebras.ai/)
