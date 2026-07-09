@@ -881,6 +881,45 @@ a:hover {
   margin-left: auto;
 }
 
+.link-item-actions {
+  margin-left: auto;
+  display: flex;
+  gap: var(--space-xs);
+  flex-shrink: 0;
+}
+
+.link-item .link-item-actions .btn-mini {
+  margin-left: 0;
+}
+
+/* ---------- 校正結果 ---------- */
+.lint-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.5rem 0.9rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.lint-item:last-child {
+  border-bottom: none;
+}
+
+.lint-message {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.lint-excerpt {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  padding: 0.2rem 0.5rem;
+  overflow-wrap: anywhere;
+}
+
 /* ---------- 記事調査 ---------- */
 .wiki-check-form {
   display: flex;

@@ -1,7 +1,7 @@
 import type { Settings } from "../lib/schemas";
 import { DEFAULT_SETTINGS } from "../lib/settings";
 
-export type TabId = "scoring" | "links" | "lookup" | "recent" | "history" | "ogp";
+export type TabId = "scoring" | "inspect" | "lookup" | "recent" | "history" | "ogp";
 
 /**
  * アプリ全体の共有状態

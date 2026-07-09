@@ -3,7 +3,7 @@ import { appState, emit } from "./ui/state";
 import { initTabs } from "./ui/tabs";
 import { initSettingsDialog } from "./ui/settings-dialog";
 import { initScoringTab } from "./ui/scoring";
-import { initLinksTab } from "./ui/links";
+import { initInspectTab } from "./ui/inspect";
 import { initLookupTab } from "./ui/lookup";
 import { initRecentTab } from "./ui/recent";
 import { initHistoryTab } from "./ui/history";
@@ -16,7 +16,7 @@ async function init(): Promise<void> {
     initTabs();
     initSettingsDialog();
     initScoringTab();
-    initLinksTab();
+    initInspectTab();
     initLookupTab();
     initRecentTab();
     initHistoryTab();
